@@ -9,6 +9,25 @@ Last Updated: July 2026
 
 ---
 
+
+
+# Business Identity
+
+Business Name:
+Vrikszon Occultaura
+
+Tagline:
+Numbers Change • Energy Transforms • Life Elevates
+
+Founder:
+Hayaett S Rahman
+
+Location:
+Salt Lake City, Kolkata
+
+Experience:
+4+ Years
+
 # Content Goals
 
 The content should:
@@ -33,31 +52,20 @@ The content should:
 
 # Brand Voice
 
-Professional
+The tone should be:
 
-Calm
+- Calm
+- Trustworthy
+- Premium
+- Spiritual
+- Professional
+- Transformational
 
-Confident
+Avoid:
+- Fear-based language
+- Fortune telling claims
+- Exaggerated promises
 
-Spiritual
-
-Elegant
-
-Warm
-
-Trustworthy
-
-Positive
-
-Supportive
-
-Never use fear-based marketing.
-
-Never exaggerate results.
-
-Never make unrealistic promises.
-
----
 
 # Writing Style
 
@@ -77,15 +85,16 @@ Avoid jargon.
 
 # Homepage
 
-## Hero
+## Hero Section
 
-Headline
+Main Heading
 
-(TBD)
+Transform Your Life Through
+Numerology & Vastu
 
 Subheading
 
-(TBD)
+Gain clarity, confidence and direction with personalized guidance designed to help you overcome obstacles and achieve harmony.
 
 Primary CTA
 
@@ -93,51 +102,36 @@ Book Consultation
 
 Secondary CTA
 
-WhatsApp Now
-
-Trust Badges
-
-Years Experience
-
-Happy Clients
-
-Consultations Completed
-
-Rating
+Explore Services
 
 ---
 
-## About Preview
+## About
 
-Founder Introduction
+The founder believes Numerology and Vastu are tools for positive transformation rather than prediction.
 
-Mission
+The mission is to help people live with greater clarity, purpose and harmony through personalized guidance.
 
-Vision
+# Services
 
-CTA
+Primary Service
 
-Read More
+Numerology & Vastu Consultation
 
----
+Duration:
+60 Minutes
 
-## Services Preview
+Price:
+₹5000
 
-Personal Numerology
+Benefits
 
-Business Numerology
-
-Name Correction
-
-Mobile Numerology
-
-Marriage Compatibility
-
-Career Guidance
-
-Vastu Consultation
-
----
+- Career Guidance
+- Relationship Guidance
+- Personal Growth
+- Harmony
+- Clarity
+- Life Direction
 
 ## Why Choose Us
 
@@ -438,3 +432,19 @@ Avoid repetitive wording.
 Focus on helping the visitor.
 
 Always write for humans first and search engines second.
+
+
+# Content Status
+
+## Received Content (Resolved)
+
+- Founder Story (Detailed)
+- Founder Images
+- Product Images (35 product catalogue photos)
+- SEO Keywords
+
+## Pending / In-Progress Content
+
+- Testimonials (1 video testimonial received; additional video/written reviews pending)
+- Blog Articles
+- Gallery

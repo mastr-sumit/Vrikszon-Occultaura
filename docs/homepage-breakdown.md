@@ -7,23 +7,50 @@ Status: Planning
 
 ---
 
-# Homepage Objective
+# Homepage Goal
 
-The homepage should achieve the following within the first 30 seconds:
+The homepage should immediately communicate:
 
-✓ Build trust
+- Who Vrikszon Occultaura is
+- What Numerology & Vastu can help with
+- Why visitors should trust the founder
+- How to book a consultation
 
-✓ Explain what the business does
+Primary Goal:
+Generate consultation bookings.
 
-✓ Showcase expertise
+Secondary Goals:
+- WhatsApp inquiries
+- Phone calls
+- Service exploration
 
-✓ Present services clearly
 
-✓ Encourage consultation bookings
+# Homepage Structure
 
-✓ Leave a premium first impression
+1. Announcement Bar
 
----
+2. Navigation
+
+3. Hero
+
+4. Trust Statistics
+
+5. About Founder
+
+6. Featured Services
+
+7. Why Choose Us
+
+8. Consultation Process
+
+9. Testimonials (Pending)
+
+10. FAQ
+
+11. Contact CTA
+
+12. Footer
+
 
 # User Journey
 
@@ -78,6 +105,79 @@ Contact CTA
 Footer
 
 ---
+
+# Hero
+
+Purpose
+
+Immediately communicate transformation rather than prediction.
+
+Contains
+
+- Heading
+- Supporting Text
+- Book Consultation Button
+- Explore Services Button
+- Founder Image (Pending)
+- Background Illustration
+- Trust Indicators
+
+
+# About
+
+Introduce the founder and explain the philosophy.
+
+Focus:
+
+Transformation
+
+Clarity
+
+Purpose
+
+Harmony
+
+Trust
+
+# Services
+
+Primary Service
+
+Numerology & Vastu Consultation
+
+Future Services
+
+- Name Correction
+- Business Numerology
+- Signature Analysis
+- Mobile Numerology
+
+# CTA
+
+Headline
+
+Begin Your Journey Towards Clarity
+
+Primary CTA
+
+Book Consultation
+
+Secondary CTA
+
+Chat on WhatsApp
+
+
+# Pending
+
+Testimonials
+
+Founder Images
+
+Product Gallery
+
+Blog Content
+
+Videos
 
 # SECTION 01
 

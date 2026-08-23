@@ -9,7 +9,7 @@ Last Updated: July 2026
 
 # Design Philosophy
 
-The website should feel
+The website should feel:
 
 • Premium
 
@@ -19,25 +19,25 @@ The website should feel
 
 • Spiritual
 
-• Calm
+• Atmospheric
 
 • Trustworthy
 
 • Modern
 
-• Minimal
+• Ornate & Mystical
 
 • Timeless
 
-The experience should feel closer to Apple, Linear, Stripe and Awwwards than a traditional astrology website.
+The experience should feel closer to a premium astrology/spiritual brand experience with rich visual depth — full-bleed atmospheric imagery, dense and confident layouts (not overly spaced out), bold large typography, decorative flourishes (sparkles, ornamental dividers, hexagon motifs), and a premium-but-maximalist feel rather than minimal.
 
 ---
 
 # Design Principles
 
-1. Less is More
+1. Rich Visual Depth & Atmosphere
 
-2. Large White Space
+2. Dense, Confident Layouts
 
 3. Typography First
 

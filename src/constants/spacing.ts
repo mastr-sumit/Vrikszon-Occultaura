@@ -1,0 +1,1 @@
+export const SECTION_PADDING_Y = "py-24 sm:py-28";

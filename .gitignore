@@ -20,9 +20,14 @@
 # production
 /build
 
+# sqlite database
+*.db
+*.db-journal
+
 # misc
 .DS_Store
 *.pem
+Work Save/
 
 # debug
 npm-debug.log*

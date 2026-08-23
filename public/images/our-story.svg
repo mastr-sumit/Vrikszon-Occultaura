@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="story-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#050d17" />
+      <stop offset="50%" stop-color="#081423" />
+      <stop offset="100%" stop-color="#120b2e" />
+    </linearGradient>
+    <radialGradient id="story-glow" cx="60%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.32" />
+      <stop offset="60%" stop-color="#d4af37" stop-opacity="0.08" />
+      <stop offset="100%" stop-color="#050d17" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="ray-grad" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#d4af37" stop-opacity="0.1" />
+      <stop offset="60%" stop-color="#d4af37" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#f3e6bc" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#story-bg)" />
+  <rect width="400" height="300" fill="url(#story-glow)" />
+
+  <!-- LEFT SIDE: Searching Phase — Scattered, tangled searching arcs & nodes -->
+  <g stroke="#d4af37" stroke-opacity="0.18" stroke-width="0.75" fill="none">
+    <path d="M 30 220 Q 80 120 180 140" stroke-dasharray="3 3" />
+    <path d="M 40 80 Q 110 180 190 120" stroke-dasharray="2 4" />
+    <path d="M 20 150 Q 100 60 210 150" />
+    <circle cx="50" cy="90" r="30" stroke-dasharray="2 2" />
+    <circle cx="80" cy="210" r="45" stroke-dasharray="4 2" />
+  </g>
+
+  <!-- TRANSITION PATHS: Connecting searching lines to the central guiding mandala -->
+  <g stroke="url(#ray-grad)" stroke-width="1" fill="none">
+    <path d="M 50 90 L 230 150" />
+    <path d="M 80 210 L 230 150" />
+    <path d="M 120 40 L 230 150" />
+  </g>
+
+  <!-- RIGHT SIDE: Clarity Phase — Ordered Sacred Geometry Mandala & Guiding Star -->
+  <g transform="translate(230, 150)">
+    <!-- Concentric Harmony Rings -->
+    <g fill="none" stroke="#d4af37" stroke-width="1">
+      <circle cx="0" cy="0" r="115" stroke-opacity="0.2" stroke-dasharray="4 4" />
+      <circle cx="0" cy="0" r="95" stroke-opacity="0.6" />
+      <circle cx="0" cy="0" r="70" stroke-opacity="0.35" />
+      <circle cx="0" cy="0" r="45" stroke-opacity="0.6" stroke-dasharray="3 2" />
+      <circle cx="0" cy="0" r="22" stroke-opacity="0.8" fill="#081423" fill-opacity="0.85" />
+    </g>
+
+    <!-- Radiating Geometry Rays -->
+    <g stroke="#d4af37" stroke-opacity="0.4" stroke-width="0.8">
+      <line x1="-115" y1="0" x2="115" y2="0" stroke-width="1.2" stroke-opacity="0.6" />
+      <line x1="0" y1="-115" x2="0" y2="115" stroke-width="1.2" stroke-opacity="0.6" />
+      <line x1="-81.3" y1="-81.3" x2="81.3" y2="81.3" stroke-dasharray="3 3" />
+      <line x1="-81.3" y1="81.3" x2="81.3" y2="-81.3" stroke-dasharray="3 3" />
+    </g>
+
+    <!-- Guiding Star / Compass Emblem -->
+    <polygon points="0,-22 6,-6 22,0 6,6 0,22 -6,6 -22,0 -6,-6" fill="#d4af37" fill-opacity="0.9" stroke="#f3e6bc" stroke-width="0.75" />
+    <polygon points="0,-14 4,-4 14,0 4,4 0,14 -4,4 -14,0 -4,-4" fill="#f3e6bc" />
+
+    <!-- Constellation Nodes around Mandala -->
+    <g fill="#f3e6bc">
+      <circle cx="0" cy="-95" r="3" />
+      <circle cx="95" cy="0" r="3" />
+      <circle cx="0" cy="95" r="3" />
+      <circle cx="-95" cy="0" r="3" />
+      <circle cx="-67.1" cy="-67.1" r="2.5" fill-opacity="0.7" />
+      <circle cx="67.1" cy="-67.1" r="2.5" fill-opacity="0.7" />
+      <circle cx="67.1" cy="67.1" r="2.5" fill-opacity="0.7" />
+      <circle cx="-67.1" cy="67.1" r="2.5" fill-opacity="0.7" />
+    </g>
+  </g>
+
+  <!-- Left Side Constellation Nodes (Searching Phase) -->
+  <g fill="#d4af37">
+    <circle cx="50" cy="90" r="2.5" fill-opacity="0.6" />
+    <circle cx="80" cy="210" r="2.5" fill-opacity="0.6" />
+    <circle cx="120" cy="40" r="2" fill-opacity="0.5" />
+    <circle cx="30" cy="220" r="2" fill-opacity="0.4" />
+  </g>
+</svg>

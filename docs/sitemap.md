@@ -75,19 +75,28 @@ Book Consultation
 
 Service Listing Page
 
-Contains
+Contains (Confirmed Client Consultation Categories):
 
-• Personal Numerology
+• Numerology Consultation
+• Mobile Numerology
+• Name Numerology
 • Business Numerology
-• Name Correction
-• Mobile Number Numerology
-• Marriage Compatibility
-• Career Guidance
-• Child Numerology
+• KP Astrology Consultation
 • Vastu Consultation
-• Signature Analysis
-• Lucky Number Consultation
-• Corporate Consultation
+• Home Vastu
+• Office Vastu
+• Plot Consultation
+• Flat Consultation
+• House Consultation
+• Car Consultation
+• Bank Account Consultation
+• Business Consultation
+• Career Consultation
+• Finance Consultation
+• Relationship Consultation
+• Marriage Consultation
+• Health Consultation
+• Healing Consultation
 
 ------------------------------------------------
 
@@ -403,17 +412,17 @@ about
 
 services
 
-services/personal-numerology
+services/numerology-consultation
 
-services/business-numerology
-
-services/name-correction
+services/vastu-consultation
 
 services/mobile-numerology
 
-services/marriage-compatibility
+services/business-numerology
 
-services/career-guidance
+services/kp-astrology
+
+services/career-consultation
 
 tools
 

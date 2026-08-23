@@ -14,13 +14,13 @@
     "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./*"]
-    }
+  {
+    "name": "next"
+  }
+],
+"paths": {
+  "@/*": ["./src/*"]
+}
   },
   "include": [
     "next-env.d.ts",

@@ -40,20 +40,20 @@ premium pairing.
 
 | Token | Size | Line Height | Font | Typical use |
 |---|---|---|---|---|
-| `display` | 72px | 120% | Cormorant Garamond | Rare, large marketing moments |
-| `hero` | 60px | 120% | Cormorant Garamond | Hero headline |
-| `h1` | 48px | 120% | Cormorant Garamond | Page titles |
-| `h2` | 40px | 120% | Cormorant Garamond | Section titles |
-| `h3` | 32px | 120% | Cormorant Garamond | Sub-section titles |
-| `h4` | 28px | 120% | Cormorant Garamond | Card/feature titles |
-| `h5` | 24px | 120% | Inter (500) | Small headings, testimonial names |
-| `h6` | 20px | 120% | Inter (500) | Labels acting as mini-headings |
-| `body-lg` | 18px | 170% | Inter | Intro paragraphs, lead text |
-| `body` | 16px | 170% | Inter | Default paragraph text |
-| `small` | 14px | 170% | Inter | Meta text, captions, form hints |
-| `caption` | 12px | 170% | Inter | Legal, timestamps, tags |
+| `display` | 58px | 115% | Cormorant Garamond | Rare, large marketing moments |
+| `hero` | 48px | 115% | Cormorant Garamond | Hero headline |
+| `h1` | 38px | 120% | Cormorant Garamond | Page titles |
+| `h2` | 32px | 125% | Cormorant Garamond | Section titles |
+| `h3` | 26px | 125% | Cormorant Garamond | Sub-section titles |
+| `h4` | 22px | 130% | Cormorant Garamond | Card/feature titles |
+| `h5` | 19px | 135% | Inter (500) | Small headings, testimonial names |
+| `h6` | 17px | 140% | Inter (500) | Labels acting as mini-headings |
+| `body-lg` | 16px | 160% | Inter | Intro paragraphs, lead text |
+| `body` | 15px | 160% | Inter | Default paragraph text |
+| `small` | 13px | 160% | Inter | Meta text, captions, form hints |
+| `caption` | 11.5px | 150% | Inter | Legal, timestamps, tags |
 
-Mobile: scale down two steps for `display`→`h3` (e.g. hero 60px → 40px on
+Mobile: scale down two steps for `display`→`h3` (e.g. hero 48px → 32px on
 mobile) to avoid wrapping/overflow. Body sizes stay fixed across breakpoints.
 
 ### Weights

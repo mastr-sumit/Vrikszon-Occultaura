@@ -1,0 +1,497 @@
+@import "tailwindcss";
+
+/**
+ * Design tokens — Tailwind CSS v4 CSS-first theme.
+ *
+ * This file is the literal enforcement mechanism for `design-language.md`
+ * (see §14 of that document), rebuilt for v4's `@theme` directive. There is
+ * no `tailwind.config.ts` in this project — v4 reads design tokens directly
+ * from these CSS custom properties and generates matching utility classes
+ * (e.g. `--color-gold-500` → `bg-gold-500`, `text-gold-500`, ...).
+ *
+ * Restricted categories (font sizes, font weights, radius, shadow) reset
+ * Tailwind's built-in scale with `--namespace-*: initial;` before
+ * redefining only the approved tokens, so no non-system value can leak in
+ * through a Tailwind default. Colors and the spacing/container scales are
+ * additive, since neutrals and the dynamic spacing unit are still needed
+ * (see inline notes below).
+ */
+@theme {
+  /* ============================================================
+     COLORS — design-language.md §2
+     Additive: Tailwind's default neutral grays remain available,
+     per "these three families + neutrals + the three semantic colors."
+  ============================================================ */
+  --color-navy-50: #eaeef3;
+  --color-navy-100: #cbd5e1;
+  --color-navy-200: #9fb0c4;
+  --color-navy-300: #6c819f;
+  --color-navy-400: #3f567a;
+  --color-navy-500: #1e3350;
+  --color-navy-600: #122542;
+  --color-navy-700: #0d1c34;
+  --color-navy-800: #0a1729;
+  --color-navy-900: #081423;
+  --color-navy-950: #050d17;
+
+  --color-indigo-50: #eeeaf7;
+  --color-indigo-100: #d3c7ec;
+  --color-indigo-200: #ae93d8;
+  --color-indigo-300: #8767c0;
+  --color-indigo-400: #5f44a0;
+  --color-indigo-500: #3d2a79;
+  --color-indigo-600: #2a1b5e;
+  --color-indigo-700: #221651;
+  --color-indigo-800: #1a1140;
+  --color-indigo-900: #120b2e;
+
+  --color-gold-50: #fbf6e8;
+  --color-gold-100: #f3e6bc;
+  --color-gold-200: #ead48d;
+  --color-gold-300: #dfc15e;
+  --color-gold-400: #d9b84b;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #b8952a;
+  --color-gold-700: #957622;
+  --color-gold-800: #725a1a;
+  --color-gold-900: #4e3e12;
+
+  --color-warm-white: #faf9f7;
+  --color-dark-surface: #10141b;
+  --color-border: #e7e7e7;
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #6e6e73;
+  --color-success: #18a957;
+  --color-warning: #f59e0b;
+  --color-error: #dc2626;
+
+  /* ============================================================
+     FONT FAMILIES — design-language.md §1 Typefaces
+     Two fonts only: Cormorant Garamond (display/headings) and
+     Inter (body/UI). `sans`/`serif` are set so the plain font-sans
+     and font-serif utilities resolve to the same two approved fonts
+     rather than Tailwind's system-font defaults.
+  ============================================================ */
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-heading: "Cormorant Garamond", Georgia, serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Inter", -apple-system, sans-serif;
+  --font-sans: "Inter", -apple-system, sans-serif;
+
+  /* ============================================================
+     FONT SIZES — design-language.md §1 Type Scale (Refined Proportionate Scale)
+     Reset then redefined: only these twelve sizes should exist as
+     text-* utilities anywhere in the codebase.
+  ============================================================ */
+  --text-*: initial;
+  --text-display: 58px;
+  --text-display--line-height: 115%;
+  --text-hero: 48px;
+  --text-hero--line-height: 115%;
+  --text-h1: 38px;
+  --text-h1--line-height: 120%;
+  --text-h2: 32px;
+  --text-h2--line-height: 125%;
+  --text-h3: 26px;
+  --text-h3--line-height: 125%;
+  --text-h4: 22px;
+  --text-h4--line-height: 130%;
+  --text-h5: 19px;
+  --text-h5--line-height: 135%;
+  --text-h6: 17px;
+  --text-h6--line-height: 140%;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 160%;
+  --text-body: 15px;
+  --text-body--line-height: 160%;
+  --text-small: 13px;
+  --text-small--line-height: 160%;
+  --text-caption: 11.5px;
+  --text-caption--line-height: 150%;
+
+  /* ============================================================
+     FONT WEIGHTS — design-language.md §1 Weights
+     Reset then redefined: only 300/400/500/600/700 exist.
+  ============================================================ */
+  --font-weight-*: initial;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ============================================================
+     SPACING — design-language.md §3
+     Tailwind v4 derives every spacing utility dynamically from this
+     single base unit: `p-4` = calc(var(--spacing) * 4), `p-30` =
+     calc(var(--spacing) * 30), etc. At the default 0.25rem (4px) unit,
+     every approved value in the 8px scale — 4, 8, 16, 24, 32, 40, 48,
+     56, 64, 80, 96, 120, 160 — already resolves exactly at its matching
+     multiplier (p-1, p-2, p-4, p-6, p-8, p-10, p-12, p-14, p-16, p-20,
+     p-24, p-30, p-40). No per-key overrides needed.
+
+     IMPORTANT: Do NOT use the --spacing-* namespace for semantic
+     aliases. In Tailwind v4, --spacing-* feeds into ALL spacing-based
+     utilities including max-w-*, w-*, h-*, p-*, m-*, etc. Defining
+     --spacing-xl: 1.5rem would make max-w-xl resolve to 24px (wrong!).
+     Use --space-* for named semantic spacing tokens instead.
+  ============================================================ */
+  --space-xs: 0.375rem;   /* 6px  */
+  --space-sm: 0.5rem;     /* 8px  */
+  --space-md: 0.75rem;    /* 12px */
+  --space-lg: 1rem;       /* 16px */
+  --space-xl: 1.5rem;     /* 24px */
+  --space-2xl: 2rem;      /* 32px */
+  --space-3xl: 2.5rem;    /* 40px */
+  /* ============================================================
+     BORDER RADIUS — design-language.md §4
+     Reset then redefined: only these five radii exist.
+  ============================================================ */
+  --radius-*: initial;
+  --radius-none: 0px;
+  --radius-sm: 8px;
+  --radius-base: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+
+  /* ============================================================
+     SHADOWS — design-language.md §5
+     Reset then redefined. All shadows use the navy hex (#081423 →
+     rgb(8,20,35)) as their color, never pure black.
+  ============================================================ */
+  --shadow-*: initial;
+  --shadow-none: none;
+  --shadow-xs: 0 2px 8px rgba(8, 20, 35, 0.05);
+  --shadow-sm: 0 4px 16px rgba(8, 20, 35, 0.06);
+  --shadow-md: 0 8px 30px rgba(8, 20, 35, 0.08);
+  --shadow-lg: 0 20px 50px rgba(8, 20, 35, 0.12);
+  --shadow-gold-glow: 0 8px 24px rgba(212, 175, 55, 0.25);
+
+  /* ============================================================
+     ANIMATION DURATIONS — design-language.md §11
+     Additive named tokens (e.g. `duration-medium`); Tailwind's
+     default numeric durations remain available for one-off/arbitrary
+     use such as the 220ms button-hover timing from §12.
+  ============================================================ */
+  --duration-very-fast: 150ms;
+  --duration-fast: 250ms;
+  --duration-normal: 400ms;
+  --duration-medium: 600ms;
+  --duration-slow: 800ms;
+  --duration-extra-slow: 1200ms;
+
+  /* ============================================================
+     TRANSITION TIMING — design-language.md §11 Easing
+     Tailwind's built-in `ease-out` (cubic-bezier(0,0,0.2,1)) and
+     `ease-in-out` (cubic-bezier(0.4,0,0.2,1)) already match the doc
+     exactly. Only the custom "luxury" curve needs adding.
+  ============================================================ */
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ============================================================
+     CONTAINER SIZES — design-language.md §10 / §13
+     Additive: generates max-w-narrow / max-w-content / max-w-wide
+     (plus matching min-w-* and @container query variants) alongside
+     Tailwind's default container scale.
+
+     --container-xl restores max-w-xl to 36rem (576px) — Tailwind's
+     intended default. Without this, --spacing-xl (if it existed in the
+     --spacing-* namespace) would have overridden it to 24px. The
+     --space-* rename above is the primary fix; this acts as a safety
+     net and explicit declaration of the correct max-w-xl value.
+  ============================================================ */
+  --container-narrow: 760px;
+  --container-content: 1180px;
+  --container-wide: 1320px;
+  --container-xl: 36rem;    /* 576px — restores Tailwind default max-w-xl */
+
+  --animate-border-beam: border-beam calc(var(--duration)*1s) infinite linear;
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  --animate-meteor: meteor 5s linear infinite;
+
+  @keyframes border-beam {
+    100% {
+      offset-distance: 100%;
+    }
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+
+  @keyframes marquee-vertical {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+
+  @keyframes meteor {
+    0% {
+      transform: rotate(215deg) translateX(0);
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: rotate(215deg) translateX(-500px);
+      opacity: 0;
+    }
+  }
+}
+
+/* ============================================================
+   LIGHT MODE OVERRIDES & THEME SYSTEM
+============================================================ */
+html.light,
+[data-theme="light"] {
+  color-scheme: light;
+  --color-navy-950: #f8fafc;
+  --color-navy-900: #ffffff;
+  --color-navy-800: #f1f5f9;
+  --color-navy-700: #e2e8f0;
+  --color-navy-600: #cbd5e1;
+  --color-navy-500: #64748b;
+  --color-navy-400: #64748b;
+  --color-navy-300: #475569;
+  --color-navy-200: #1e293b;
+  --color-navy-100: #0f172a;
+  --color-navy-50: #020617;
+
+  --color-indigo-950: #f5f3ff;
+  --color-indigo-900: #ede9fe;
+  --color-indigo-800: #ddd6fe;
+  --color-indigo-700: #c4b5fd;
+  --color-indigo-600: #7c3aed;
+
+  --color-dark-surface: #ffffff;
+  --color-warm-white: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+}
+
+html.light body {
+  background-color: var(--color-navy-950);
+  color: var(--color-navy-100);
+}
+
+/* Light mode text contrast adaptations */
+html.light .text-white {
+  color: #0f172a;
+}
+
+/* Retain high-contrast dark text on gold / bright accents */
+html.light .bg-gold-500,
+html.light .bg-gold-500 *,
+html.light button.bg-gold-500,
+html.light a.bg-gold-500,
+html.light .text-navy-950 {
+  color: #050d17 !important;
+}
+
+/* Retain white text on solid colored badges and buttons */
+html.light .bg-rose-600,
+html.light .bg-rose-600 *,
+html.light .bg-emerald-600,
+html.light .bg-emerald-600 *,
+html.light .bg-red-600,
+html.light .bg-red-600 *,
+html.light [data-text-white] {
+  color: #ffffff !important;
+}
+
+html.light .text-white\/90,
+html.light .text-white\/80 {
+  color: #1e293b;
+}
+
+html.light .text-white\/70,
+html.light .text-white\/60 {
+  color: #475569;
+}
+
+html.light .border-white\/10,
+html.light .border-white\/20,
+html.light .border-white\/30 {
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+html.light .bg-navy-900\/60,
+html.light .bg-navy-950\/80,
+html.light .bg-navy-950\/60,
+html.light .bg-navy-950\/40,
+html.light .bg-navy-900\/80,
+html.light .bg-navy-800\/80 {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+}
+
+html.light .bg-navy-950\/90,
+html.light .bg-navy-900\/95,
+html.light .bg-navy-900\/90 {
+  background-color: rgba(255, 255, 255, 0.98);
+}
+
+html.light .shadow-md,
+html.light .shadow-lg,
+html.light .shadow-xl,
+html.light .shadow-2xl {
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+
+/* Modal backdrops in light mode */
+html.light .fixed.inset-0.bg-navy-950\/80,
+html.light .fixed.inset-0.bg-navy-950\/40 {
+  background-color: rgba(15, 23, 42, 0.45);
+}
+
+/* ============================================================
+   LIGHT MODE: HIGH-CONTRAST SEMANTIC COLORS & STATUS BADGES
+============================================================ */
+
+/* ── Red / Rose (Sign Out, Delete Button, Cancelled, Errors) ── */
+html.light .text-rose-300,
+html.light .text-rose-400 {
+  color: #e11d48 !important; /* Vivid Rich Red/Rose */
+}
+html.light .text-rose-500 {
+  color: #be123c !important;
+}
+html.light .bg-rose-950\/20,
+html.light .bg-rose-950\/30,
+html.light .bg-rose-950\/40,
+html.light .bg-rose-950\/60,
+html.light .bg-rose-950 {
+  background-color: #ffe4e6 !important; /* Soft Rose Background */
+}
+html.light .border-rose-500\/20,
+html.light .border-rose-500\/30,
+html.light .border-rose-500\/40,
+html.light .border-rose-500\/50,
+html.light .border-rose-500 {
+  border-color: #fca5a5 !important; /* Crisp Red Border */
+}
+html.light button.bg-rose-950\/20:hover,
+html.light .hover\:bg-rose-950\/40:hover,
+html.light .hover\:bg-rose-950\/20:hover {
+  background-color: #fecdd3 !important;
+  color: #9f1239 !important;
+}
+html.light .hover\:border-rose-500\/50:hover,
+html.light .hover\:border-rose-500\/40:hover {
+  border-color: #f87171 !important;
+}
+
+/* ── Green / Emerald (Open for Enrollment, Confirmed, Active, Paid) ── */
+html.light .text-emerald-400,
+html.light .text-emerald-300 {
+  color: #15803d !important; /* Rich Forest Green (high contrast) */
+}
+html.light .text-emerald-500 {
+  color: #166534 !important;
+}
+html.light .bg-emerald-950\/20,
+html.light .bg-emerald-950\/30,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/60,
+html.light .bg-emerald-950\/80,
+html.light .bg-emerald-950 {
+  background-color: #dcfce7 !important; /* Soft Mint Green Background */
+}
+html.light .border-emerald-500\/20,
+html.light .border-emerald-500\/30,
+html.light .border-emerald-500\/40,
+html.light .border-emerald-400\/20,
+html.light .border-emerald-500 {
+  border-color: #86efac !important; /* Crisp Green Border */
+}
+html.light .hover\:bg-emerald-950\/40:hover,
+html.light .hover\:bg-emerald-950\/20:hover {
+  background-color: #bbf7d0 !important;
+}
+
+/* ── Amber / Yellow (Pending, Category tags, Warnings) ── */
+html.light .text-amber-400,
+html.light .text-amber-300 {
+  color: #b45309 !important; /* Deep Amber */
+}
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-950\/60,
+html.light .bg-amber-950 {
+  background-color: #fef3c7 !important;
+}
+html.light .border-amber-500\/20,
+html.light .border-amber-500\/30,
+html.light .border-amber-500\/40,
+html.light .border-amber-400\/20 {
+  border-color: #fde68a !important;
+}
+
+/* ── Sky / Blue (Delivered, Completed, Processing) ── */
+html.light .text-sky-400,
+html.light .text-sky-300 {
+  color: #0369a1 !important;
+}
+html.light .bg-sky-950\/20,
+html.light .bg-sky-950\/40,
+html.light .bg-sky-950\/60,
+html.light .bg-sky-950 {
+  background-color: #e0f2fe !important;
+}
+html.light .border-sky-500\/20,
+html.light .border-sky-500\/30,
+html.light .border-sky-500\/40 {
+  border-color: #bae6fd !important;
+}
+
+/* ── Purple (Inquiries, Occult, Special) ── */
+html.light .text-purple-400,
+html.light .text-purple-300 {
+  color: #7e22ce !important;
+}
+html.light .bg-purple-950\/20,
+html.light .bg-purple-950\/40,
+html.light .bg-purple-950\/60,
+html.light .bg-purple-950 {
+  background-color: #f3e8ff !important;
+}
+html.light .border-purple-500\/20,
+html.light .border-purple-500\/30,
+html.light .border-purple-500\/40 {
+  border-color: #e9d5ff !important;
+}
+
+/* ── Neutral Table Chips & Action Buttons ── */
+html.light td .bg-navy-950 {
+  background-color: #f1f5f9;
+}
+html.light td .border-navy-800,
+html.light td .border-navy-700 {
+  border-color: #e2e8f0;
+}
+html.light td .text-navy-200 {
+  color: #334155;
+}
+html.light td .text-navy-300 {
+  color: #475569;
+}
+html.light td .text-navy-400 {
+  color: #64748b;
+}
+
+/* Theme transition */
+html {
+  transition: background-color 200ms ease, color 200ms ease;
+}

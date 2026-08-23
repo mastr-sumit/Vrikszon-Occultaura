@@ -1,18 +1,57 @@
-# PROJECT OVERVIEW
+# Project Overview
 
-Project Name:
-Premium Numerology & Astrology Website
+## Project Name
+Vrikszon Occultaura
 
-Project Goal:
-Create a luxury, modern, high-converting numerology website that feels significantly more premium than the client's reference while maintaining the same spiritual essence.
+## Tagline
+Numbers Change • Energy Transforms • Life Elevates
 
-Reference Website:
-https://saccredmaziics.com/
+## Founder
+Hayaett S Rahman
 
-Do NOT copy the reference website.
-Only use it as inspiration.
+## Industry
+Numerology, Vastu & Spiritual Guidance
+
+## Website Type
+Premium Business Website
+
+## Goal
+
+Create a premium, modern and highly trustworthy website that inspires visitors to book a consultation.
+
+The website should preserve the spiritual essence of the reference website while significantly improving:
+
+- UI
+- UX
+- Responsiveness
+- Performance
+- Accessibility
+- SEO
+- Code Quality
+
+The client wants the website to remain visually similar to the provided reference website.
 
 -------------------------------------------------
+
+# Brand Positioning
+
+This is not a fortune-telling website.
+
+The brand represents transformation through Numerology and Vastu.
+
+Core Promise:
+
+Helping people gain clarity, confidence and direction in life through personalized guidance.
+
+Brand Personality
+
+- Trustworthy
+- Premium
+- Spiritual
+- Modern
+- Calm
+- Knowledgeable
+- Authentic
 
 # CLIENT OBJECTIVES
 
@@ -34,18 +73,58 @@ Secondary Goals
 
 -------------------------------------------------
 
-# TARGET AUDIENCE
+# Target Audience
 
-• Business Owners
-• Entrepreneurs
-• Working Professionals
-• Students
-• Couples
-• Families
-• People seeking guidance
-• Spiritual audience
+People looking for:
+
+- Career guidance
+- Relationship guidance
+- Personal growth
+- Business guidance
+- Numerology consultation
+- Vastu consultation
+
+Primary Age
+
+25–50 years
 
 -------------------------------------------------
+
+# Primary Conversion Goal
+
+Book Consultation
+
+Secondary Goals
+
+- WhatsApp Contact
+- Phone Call
+- Read Blogs
+- Explore Services
+
+
+# Services
+
+Primary Service
+
+Numerology & Vastu Consultation
+
+Duration
+
+60 Minutes
+
+Price
+
+₹5000
+
+Future Services
+
+- Name Correction
+- Mobile Numerology
+- Business Numerology
+- Signature Analysis
+- Vastu Consultation
+
+
 
 # BRAND PERSONALITY
 
@@ -314,3 +393,33 @@ Every animation must have a purpose.
 Every section must support conversion.
 
 Quality is more important than speed.
+
+
+# Reference Website
+
+The client wants the website to stay visually very close to the provided reference website.
+
+We will improve:
+
+- Typography
+- Spacing
+- Animations
+- Responsiveness
+- Performance
+
+without changing the overall layout drastically.
+
+# Pending Client Information
+
+Waiting For
+
+- Logo
+- Founder Images
+- Testimonials
+- Product Images
+- Blog Articles
+- Social Media Links
+- Final Contact Details
+- Booking Workflow
+- Payment Gateway
+- SEO Keywords
