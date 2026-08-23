@@ -259,7 +259,7 @@ const Footer = () => {
               </motion.div>
             </div>
 
-            {/* Bottom bar — thin divider, copyright, legal links, credit line */}
+            {/* Bottom bar — thin divider, copyright, admin link, legal links, credit line */}
             <motion.div
               variants={itemVariants}
               className={cn(
@@ -267,9 +267,18 @@ const Footer = () => {
                 "md:flex-row md:flex-wrap md:items-center md:justify-between"
               )}
             >
-              <p className="text-small text-white/60">
-                © 2026 Vrikszon Occultaura. All rights reserved.
-              </p>
+              <div className="flex flex-wrap items-center justify-center gap-3 text-center md:text-left">
+                <p className="text-small text-white/60">
+                  © 2026 Vrikszon Occultaura. All rights reserved.
+                </p>
+                <span className="hidden sm:inline text-white/20" aria-hidden="true">·</span>
+                <Link
+                  href="/admin/login"
+                  className="text-caption text-white/35 hover:text-white/70 transition-colors"
+                >
+                  Admin Login
+                </Link>
+              </div>
 
               <ul className="flex flex-wrap items-center justify-center gap-6">
                 {LEGAL_LINKS.map((item) => (
