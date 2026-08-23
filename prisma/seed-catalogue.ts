@@ -1,23 +1,23 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { PRODUCTS } from "../src/data/products";
 import { COURSES } from "../src/data/courses";
 
 /**
- * One-off Catalogue Migration Script
+ * One-off Catalogue Migration Script (PostgreSQL / Supabase)
  *
- * Migrates static PRODUCTS and COURSES from typescript data files into SQLite database.
+ * Migrates static PRODUCTS and COURSES from typescript data files into PostgreSQL database.
  * Uses upsert by slug so the script is idempotent and safe to re-run.
  */
 async function main() {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL || "file:./dev.db",
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
   try {
-    console.log("\n📦 Starting Catalogue Migration to SQLite Database...\n");
+    console.log("\n📦 Starting Catalogue Migration to PostgreSQL (Supabase) Database...\n");
 
     // 1. Migrate Products
     let productsCount = 0;
@@ -39,7 +39,6 @@ async function main() {
           variantsNote: product.variantsNote ?? null,
         },
         create: {
-          id: product.id,
           slug: product.slug,
           name: product.name,
           category: product.category,
@@ -57,7 +56,7 @@ async function main() {
       });
       productsCount++;
     }
-    console.log(`✅ Products: ${productsCount} products successfully upserted.`);
+    console.log(`✅ Migrated ${productsCount} Products successfully.`);
 
     // 2. Migrate Courses
     let coursesCount = 0;
@@ -75,7 +74,6 @@ async function main() {
           enabled: course.enabled,
         },
         create: {
-          id: course.id,
           slug: course.slug,
           title: course.title,
           category: course.category ?? null,
@@ -89,22 +87,17 @@ async function main() {
       });
       coursesCount++;
     }
-    console.log(`✅ Courses:  ${coursesCount} courses successfully upserted.`);
+    console.log(`✅ Migrated ${coursesCount} Courses successfully.\n`);
 
-    // 3. Summary & Verification
     const totalProducts = await prisma.product.count();
     const totalCourses = await prisma.course.count();
-
-    console.log("\n========================================================");
-    console.log("🎉 Catalogue Migration Completed Successfully!");
-    console.log(`   Total Products in Database: ${totalProducts}`);
-    console.log(`   Total Courses in Database:  ${totalCourses}`);
-    console.log("========================================================\n");
+    console.log(`📊 Current DB Totals -> Products: ${totalProducts}, Courses: ${totalCourses}\n`);
   } catch (error) {
     console.error("❌ Catalogue migration failed:", error);
     process.exit(1);
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 }
 

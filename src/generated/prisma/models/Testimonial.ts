@@ -1128,6 +1128,7 @@ export type TestimonialCreateManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * The data used to create many Testimonials.
    */
   data: Prisma.TestimonialCreateManyInput | Prisma.TestimonialCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1146,6 +1147,7 @@ export type TestimonialCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Ext
    * The data used to create many Testimonials.
    */
   data: Prisma.TestimonialCreateManyInput | Prisma.TestimonialCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

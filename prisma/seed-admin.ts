@@ -1,28 +1,25 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 /**
- * One-off Admin Seeding Script
+ * One-off Admin Seeding Script (PostgreSQL / Supabase)
  *
  * Creates or updates an AdminUser record from environment variables.
  * Usage:
  *   SEED_ADMIN_EMAIL="admin@example.com" SEED_ADMIN_PASSWORD="YourSecurePassword" npm run seed:admin
  */
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL?.toLowerCase().trim();
-  const password = process.env.SEED_ADMIN_PASSWORD;
+  const email = process.env.SEED_ADMIN_EMAIL?.toLowerCase().trim() || "admin@vrikszon.com";
+  const password = process.env.SEED_ADMIN_PASSWORD || "Admin@123";
   const name = process.env.SEED_ADMIN_NAME?.trim() || "Admin";
 
   if (!email || !password) {
     console.error("\n========================================================");
     console.error("❌ Missing required environment variables.");
     console.error("Please provide both SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD.");
-    console.error("\nExample (PowerShell):");
-    console.error('  $env:SEED_ADMIN_EMAIL="admin@example.com"; $env:SEED_ADMIN_PASSWORD="YourPassword"; npm run seed:admin');
-    console.error("\nExample (Bash / macOS / Linux):");
-    console.error('  SEED_ADMIN_EMAIL="admin@example.com" SEED_ADMIN_PASSWORD="YourPassword" npm run seed:admin');
     console.error("========================================================\n");
     process.exit(1);
   }
@@ -32,9 +29,8 @@ async function main() {
     process.exit(1);
   }
 
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL || "file:./dev.db",
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
   try {
@@ -64,6 +60,7 @@ async function main() {
     process.exit(1);
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 }
 

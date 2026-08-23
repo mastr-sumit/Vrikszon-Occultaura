@@ -988,6 +988,7 @@ export type AdminUserCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * The data used to create many AdminUsers.
    */
   data: Prisma.AdminUserCreateManyInput | Prisma.AdminUserCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1006,6 +1007,7 @@ export type AdminUserCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * The data used to create many AdminUsers.
    */
   data: Prisma.AdminUserCreateManyInput | Prisma.AdminUserCreateManyInput[]
+  skipDuplicates?: boolean
 }
 
 /**

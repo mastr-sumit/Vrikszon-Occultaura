@@ -1,27 +1,26 @@
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 
 /**
- * Prisma Client singleton.
+ * Prisma Client singleton with PostgreSQL (Supabase) driver adapter.
  *
- * Prisma 7 removed the built-in query engine — every provider now needs a
- * driver adapter. For SQLite that's @prisma/adapter-better-sqlite3.
- *
- * Next.js dev mode hot-reloads modules on every file save, which would
- * normally create a new PrismaClient (and a new DB connection) each time.
- * Stashing the instance on `globalThis` in development avoids exhausting
- * the connection pool.
+ * Stashing both the pg.Pool and PrismaClient instances on `globalThis` in development
+ * prevents exhausting the connection pool during Next.js hot module reloads.
  */
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  pool: Pool | undefined;
 };
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL || "file:./dev.db",
-});
+const connectionString = process.env.DATABASE_URL;
+
+const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+  globalForPrisma.pool = pool;
 }

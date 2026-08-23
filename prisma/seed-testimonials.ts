@@ -1,17 +1,17 @@
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import fs from "fs";
 import path from "path";
 
 async function main() {
-  const adapter = new PrismaBetterSqlite3({
-    url: process.env.DATABASE_URL || "file:./dev.db",
-  });
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
   const prisma = new PrismaClient({ adapter });
 
   try {
-    console.log("\n📦 Starting Testimonials Seeding to SQLite Database...\n");
+    console.log("\n📦 Starting Testimonials Seeding to PostgreSQL (Supabase) Database...\n");
 
     const posterPath = path.join(process.cwd(), "public", "images", "testimonials", "chetan-poster.jpg");
     const posterExists = fs.existsSync(posterPath);
@@ -50,6 +50,7 @@ async function main() {
     process.exit(1);
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 }
 
