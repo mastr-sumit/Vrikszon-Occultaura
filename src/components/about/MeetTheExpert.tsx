@@ -75,18 +75,20 @@ const MeetTheExpert = () => {
   return (
     <section
       aria-label="Meet the Expert"
-      className="relative overflow-hidden bg-white py-16 md:py-20 lg:py-24 xl:py-30"
+      className="relative bg-white py-16 md:py-20 lg:py-24 xl:py-30"
     >
-      {/* Soft gold glow — purely atmospheric accent */}
+      {/* Soft gold glow — contained in overflow-hidden layer so section allows position: sticky */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-32 bottom-0 h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--color-gold-400)_0%,transparent_70%)] opacity-[0.08] blur-3xl"
-      />
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div className="absolute -right-32 bottom-0 h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--color-gold-400)_0%,transparent_70%)] opacity-[0.08] blur-3xl" />
+      </div>
 
-      <Container size="wide" className="relative">
-        <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-16">
+      <Container size="wide" className="relative z-10">
+        <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-16 items-start">
           {/* ================= LEFT (5 cols) — portrait (Sticky in this section on Desktop) ================= */}
-          <div className="lg:col-span-5 lg:sticky lg:top-28 lg:self-start">
+          <div className="lg:col-span-5 lg:sticky lg:top-28">
             <motion.div
               {...portraitReveal}
               className="relative mx-auto w-full max-w-[380px] lg:mx-0"

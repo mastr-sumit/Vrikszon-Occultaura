@@ -17,8 +17,8 @@ const HIGHLIGHTS = [
  * Expert ("Our Expert")
  *
  * Founder introduction section for Hayaett S Rahman on the Homepage.
- * Features a sticky founder portrait on desktop viewports alongside
- * editorial copy and consultation highlights.
+ * Features a sticky founder portrait on desktop viewports that stays pinned
+ * in this section while the user scrolls down through the text content.
  */
 const Expert = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -53,17 +53,19 @@ const Expert = () => {
       };
 
   return (
-    <section className="relative overflow-hidden bg-white py-12 md:py-16 lg:py-20">
-      {/* Atmospheric glow */}
+    <section className="relative bg-white py-12 md:py-16 lg:py-20">
+      {/* Atmospheric glow — contained in overflow-hidden layer so section allows position: sticky */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--color-indigo-100)_0%,transparent_70%)] opacity-40 blur-2xl"
-      />
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <div className="absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full bg-[radial-gradient(circle,var(--color-indigo-100)_0%,transparent_70%)] opacity-40 blur-2xl" />
+      </div>
 
       <Container size="wide" className="relative z-10">
-        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 items-start">
           {/* Left — Founder Portrait with Offset Gold Frame (Sticky on Desktop) */}
-          <div className="mx-auto w-full max-w-[420px] lg:mx-0 lg:self-start lg:sticky lg:top-28">
+          <div className="mx-auto w-full max-w-[420px] lg:mx-0 lg:sticky lg:top-28">
             <motion.div {...fadeInFromLeft} className="w-full">
               <div className="group relative aspect-[4/5] w-full cursor-pointer transition-all duration-500 ease-luxury hover:scale-[1.015]">
                 {/* Offset gold border */}
