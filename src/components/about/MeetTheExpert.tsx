@@ -13,31 +13,7 @@ import { EXPERT_PROFILE } from "@/data/expertProfile";
  *
  * Third section on the About page (renders immediately after OurStory —
  * see src/data/aboutSections.ts). A premium, editorial personal-brand
- * moment for the founder — deliberately distinct from both:
- * - The homepage's Expert section (src/components/sections/Expert.tsx):
- *   that section uses a 45/55 split, bg-white, and a 4:5 portrait with
- *   an offset gold frame.
- * - OurStory (src/components/about/OurStory.tsx): 45/55 split, bg-warm-white,
- *   4:3 image with floating stat cards below it.
- *
- * This section instead uses a stricter 40/60 split, a tall 3:4 portrait
- * with a direct gold ring (not an offset frame), a floating credential
- * badge at the portrait's lower edge, credential pills (not stat cards),
- * achievement cards in a row, and a large serif pull-quote — a
- * different visual grammar for the same "founder" subject matter.
- *
- * IMAGE
- * No verified/approved founder photograph exists in the project
- * (docs/content.md lists "Founder Images" under "Pending Content").
- * Per this task's explicit instruction not to invent a person, the
- * portrait slot is an elegant placeholder panel — not a stand-in photo.
- * Swap only the inner surface for a real `next/image` once photography
- * is supplied; the outer ring/frame does not need to change.
- *
- * All copy, credentials, achievements and the quote are data-driven
- * from src/data/expertProfile.ts. Achievements and the quote have no
- * verified content yet, so they render an honest "Coming Soon"
- * treatment instead of invented text.
+ * moment for the founder with a sticky portrait column on desktop viewports.
  */
 const MeetTheExpert = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -98,27 +74,25 @@ const MeetTheExpert = () => {
   return (
     <section
       aria-label="Meet the Expert"
-      className="relative overflow-hidden bg-navy-50/60 py-16 md:py-20 lg:py-24 xl:py-30"
+      className="relative overflow-hidden bg-white py-16 md:py-20 lg:py-24 xl:py-30"
     >
-      {/* Soft gold glow — the section's atmospheric differentiator from
-          the surrounding warm-white/white sections. Purely decorative. */}
+      {/* Soft gold glow — purely atmospheric accent */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-32 bottom-0 h-[440px] w-[440px] rounded-full bg-[radial-gradient(circle,var(--color-gold-400)_0%,transparent_70%)] opacity-[0.08] blur-3xl"
       />
 
       <Container size="wide" className="relative">
-        <div className="flex flex-col gap-14 lg:flex-row lg:items-start lg:gap-16">
-          {/* ================= LEFT (~40%) — portrait ================= */}
-          <div className="lg:basis-[40%]">
+        <div className="flex flex-col gap-14 lg:flex-row lg:gap-16">
+          {/* ================= LEFT (~40%) — portrait (Sticky on Desktop) ================= */}
+          <div className="lg:basis-[40%] lg:self-start lg:sticky lg:top-28">
             <motion.div
               {...portraitReveal}
               className="relative mx-auto w-full max-w-[380px] lg:mx-0"
             >
               <div className="relative aspect-[3/4] w-full">
-                {/* Direct gold ring on the portrait itself — distinct
-                    from the offset-frame treatment used elsewhere. */}
-                <div className="absolute inset-0 rounded-[24px] ring-1 ring-gold-500/40 ring-offset-4 ring-offset-navy-50" />
+                {/* Direct gold ring on the portrait itself */}
+                <div className="absolute inset-0 rounded-[24px] ring-1 ring-gold-500/40 ring-offset-4 ring-offset-white" />
 
                 <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-navy-900/10 shadow-lg">
                   <Image
@@ -130,8 +104,7 @@ const MeetTheExpert = () => {
                   />
                 </div>
 
-                {/* Floating credential badge overlapping the portrait's
-                    lower edge — the section's signature accent. */}
+                {/* Floating credential badge overlapping the portrait's lower edge */}
                 <div className="absolute -bottom-5 left-1/2 w-[85%] -translate-x-1/2 rounded-full border border-border bg-white px-5 py-3 text-center shadow-md">
                   <span className="block font-heading text-h6 font-medium text-navy-900">
                     {name}

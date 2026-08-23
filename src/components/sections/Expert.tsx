@@ -17,7 +17,8 @@ const HIGHLIGHTS = [
  * Expert ("Our Expert")
  *
  * Founder introduction section for Hayaett S Rahman on the Homepage.
- * Matches reference site typography, layout, and visual design tokens.
+ * Features a sticky founder portrait on desktop viewports alongside
+ * editorial copy and consultation highlights.
  */
 const Expert = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -60,39 +61,41 @@ const Expert = () => {
       />
 
       <Container size="wide" className="relative z-10">
-        <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
-          {/* Left — Founder Portrait with Offset Gold Frame */}
-          <motion.div {...fadeInFromLeft} className="mx-auto w-full max-w-[420px] lg:mx-0">
-            <div className="group relative aspect-[4/5] w-full cursor-pointer transition-all duration-500 ease-luxury hover:scale-[1.015]">
-              {/* Offset gold border */}
-              <div className="absolute -bottom-4 -right-4 h-full w-full rounded-[24px] border border-gold-500/30 transition-colors duration-500 group-hover:border-gold-500/60 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.2)]" />
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
+          {/* Left — Founder Portrait with Offset Gold Frame (Sticky on Desktop) */}
+          <div className="mx-auto w-full max-w-[420px] lg:mx-0 lg:self-start lg:sticky lg:top-28">
+            <motion.div {...fadeInFromLeft} className="w-full">
+              <div className="group relative aspect-[4/5] w-full cursor-pointer transition-all duration-500 ease-luxury hover:scale-[1.015]">
+                {/* Offset gold border */}
+                <div className="absolute -bottom-4 -right-4 h-full w-full rounded-[24px] border border-gold-500/30 transition-colors duration-500 group-hover:border-gold-500/60 group-hover:shadow-[0_0_24px_rgba(212,175,55,0.2)]" />
 
-              {/* Soft gold glow */}
-              <div
-                className="absolute -left-10 -top-10 h-2/3 w-2/3 rounded-full bg-[radial-gradient(circle,var(--color-gold-400)_0%,transparent_70%)] opacity-20 blur-2xl pointer-events-none"
-                style={{ opacity: 0.15 }}
-              />
-
-              {/* Decorative angular line */}
-              <div className="absolute left-1/2 top-1/2 h-px w-[140%] -translate-x-1/2 -translate-y-1/2 rotate-[30deg] bg-navy-900/[0.05] pointer-events-none" />
-
-              {/* Portrait Image Container */}
-              <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-navy-900/10 bg-navy-50 shadow-md transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(8,20,35,0.18),0_0_30px_rgba(212,175,55,0.2)] group-hover:border-gold-500/40">
-                <Image
-                  src="/images/founder.jpg"
-                  alt="Hayaett S Rahman"
-                  fill
-                  className="object-cover transition-transform duration-700 ease-luxury group-hover:scale-105"
-                  sizes="(max-width: 1024px) 100vw, 420px"
-                  priority
+                {/* Soft gold glow */}
+                <div
+                  className="absolute -left-10 -top-10 h-2/3 w-2/3 rounded-full bg-[radial-gradient(circle,var(--color-gold-400)_0%,transparent_70%)] opacity-20 blur-2xl pointer-events-none"
+                  style={{ opacity: 0.15 }}
                 />
-              </div>
 
-              {/* Gold corner accents */}
-              <div className="absolute -bottom-3 -left-3 h-6 w-px bg-gold-500/50 group-hover:bg-gold-500 transition-colors duration-300" />
-              <div className="absolute -bottom-3 -left-3 h-px w-6 bg-gold-500/50 group-hover:bg-gold-500 transition-colors duration-300" />
-            </div>
-          </motion.div>
+                {/* Decorative angular line */}
+                <div className="absolute left-1/2 top-1/2 h-px w-[140%] -translate-x-1/2 -translate-y-1/2 rotate-[30deg] bg-navy-900/[0.05] pointer-events-none" />
+
+                {/* Portrait Image Container */}
+                <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-navy-900/10 bg-navy-50 shadow-md transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(8,20,35,0.18),0_0_30px_rgba(212,175,55,0.2)] group-hover:border-gold-500/40">
+                  <Image
+                    src="/images/founder.jpg"
+                    alt="Hayaett S Rahman"
+                    fill
+                    className="object-cover transition-transform duration-700 ease-luxury group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 420px"
+                    priority
+                  />
+                </div>
+
+                {/* Gold corner accents */}
+                <div className="absolute -bottom-3 -left-3 h-6 w-px bg-gold-500/50 group-hover:bg-gold-500 transition-colors duration-300" />
+                <div className="absolute -bottom-3 -left-3 h-px w-6 bg-gold-500/50 group-hover:bg-gold-500 transition-colors duration-300" />
+              </div>
+            </motion.div>
+          </div>
 
           {/* Right — Intro Copy */}
           <div className="flex flex-col items-start gap-6 text-left">

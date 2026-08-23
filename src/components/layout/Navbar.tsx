@@ -350,6 +350,7 @@ const Navbar = () => {
         <AnimatePresence>
           {mobileOpen && (
             <motion.button
+              key="mobile-nav-backdrop"
               type="button"
               aria-hidden="true"
               tabIndex={-1}
@@ -367,6 +368,7 @@ const Navbar = () => {
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
+              key="mobile-nav-panel"
               id="mobile-nav-panel"
               role="dialog"
               aria-modal="true"

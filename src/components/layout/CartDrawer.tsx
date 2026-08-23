@@ -51,15 +51,19 @@ const CartDrawer = () => {
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex justify-end overflow-hidden">
+        <motion.div
+          key="cart-drawer-container"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[100] flex justify-end overflow-hidden"
+        >
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+          <div
             onClick={closeCart}
-            className="fixed inset-0 bg-navy-950/60 backdrop-blur-sm"
+            aria-hidden="true"
+            className="fixed inset-0 bg-navy-950/60 backdrop-blur-sm cursor-pointer"
           />
 
           {/* Drawer Panel */}
@@ -376,7 +380,7 @@ const CartDrawer = () => {
               )}
             </AnimatePresence>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body

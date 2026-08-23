@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Search, X, Sparkles, GraduationCap, ShoppingBag, ArrowRight } from "lucide-react";
@@ -29,6 +30,11 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const shouldReduceMotion = useReducedMotion();
   const [query, setQuery] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Focus input automatically when opened
   useEffect(() => {
@@ -143,25 +149,33 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">
+        <motion.div
+          key="search-modal-portal"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 px-4 overflow-hidden"
+        >
           {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             onClick={onClose}
-            className="fixed inset-0 bg-navy-950/80 backdrop-blur-md"
+            aria-hidden="true"
+            className="fixed inset-0 bg-navy-950/80 backdrop-blur-md cursor-pointer"
           />
 
           {/* Modal Container */}
           <motion.div
+            key="search-modal-content"
             initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -16 }}
-            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-gold-500/30 bg-navy-900 shadow-2xl shadow-navy-950/80 z-10 flex flex-col max-h-[80vh]"
           >
             {/* Input Bar Header */}
@@ -179,7 +193,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="p-1 text-white/50 hover:text-white transition-colors"
+                  className="p-1 text-white/50 hover:text-white transition-colors cursor-pointer"
                   aria-label="Clear search query"
                 >
                   <X className="h-4 w-4" />
@@ -203,7 +217,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         key={term}
                         type="button"
                         onClick={() => setQuery(term)}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gold-300 hover:bg-gold-500/20 hover:border-gold-500/40 transition-all"
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-gold-300 hover:bg-gold-500/20 hover:border-gold-500/40 transition-all cursor-pointer"
                       >
                         {term}
                       </button>
@@ -221,7 +235,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       key={item.id}
                       type="button"
                       onClick={() => handleSelectResult(item.href)}
-                      className="w-full text-left flex items-start gap-3.5 rounded-xl border border-white/5 bg-white/5 p-3.5 hover:bg-gold-500/10 hover:border-gold-500/30 transition-all group"
+                      className="w-full text-left flex items-start gap-3.5 rounded-xl border border-white/5 bg-white/5 p-3.5 hover:bg-gold-500/10 hover:border-gold-500/30 transition-all group cursor-pointer"
                     >
                       <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy-950 border border-white/10">
                         {getTypeIcon(item.type)}
@@ -279,14 +293,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="text-gold-400 hover:underline font-medium"
+                className="text-gold-400 hover:underline font-medium cursor-pointer"
               >
                 Close
               </button>
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
