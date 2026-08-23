@@ -13,7 +13,8 @@ import { EXPERT_PROFILE } from "@/data/expertProfile";
  *
  * Third section on the About page (renders immediately after OurStory —
  * see src/data/aboutSections.ts). A premium, editorial personal-brand
- * moment for the founder with a sticky portrait column on desktop viewports.
+ * moment for the founder with a sticky portrait column on desktop viewports
+ * that stays pinned inside this section only.
  */
 const MeetTheExpert = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -83,9 +84,9 @@ const MeetTheExpert = () => {
       />
 
       <Container size="wide" className="relative">
-        <div className="flex flex-col gap-14 lg:flex-row lg:gap-16">
-          {/* ================= LEFT (~40%) — portrait (Sticky on Desktop) ================= */}
-          <div className="lg:basis-[40%] lg:self-start lg:sticky lg:top-28">
+        <div className="grid grid-cols-1 gap-14 lg:grid-cols-12 lg:gap-16">
+          {/* ================= LEFT (5 cols) — portrait (Sticky in this section on Desktop) ================= */}
+          <div className="lg:col-span-5 lg:sticky lg:top-28 lg:self-start">
             <motion.div
               {...portraitReveal}
               className="relative mx-auto w-full max-w-[380px] lg:mx-0"
@@ -117,8 +118,8 @@ const MeetTheExpert = () => {
             </motion.div>
           </div>
 
-          {/* ================= RIGHT (~60%) — content ================= */}
-          <div className="flex flex-col gap-8 lg:basis-[60%]">
+          {/* ================= RIGHT (7 cols) — content ================= */}
+          <div className="flex flex-col gap-8 lg:col-span-7">
             <div className="flex flex-col gap-5 text-left">
               <motion.span
                 {...fadeUp(0)}
