@@ -8,13 +8,23 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { cn } from "@/lib/utils";
-import { TESTIMONIALS, type Testimonial } from "@/data/testimonials";
 
 /** Fraction of the visible track width to move per Prev/Next press. */
 const SCROLL_STEP_RATIO = 0.9;
 
+export interface TestimonialItem {
+  id: string;
+  clientName: string;
+  clientRoleOrLocation?: string | null;
+  quote?: string | null;
+  videoSrc?: string | null;
+  posterImage?: string | null;
+  featured?: boolean;
+  enabled?: boolean;
+}
+
 interface TestimonialCardProps {
-  testimonial: Testimonial;
+  testimonial: TestimonialItem;
   variants: any;
 }
 
@@ -119,18 +129,55 @@ const TestimonialCard = ({ testimonial, variants }: TestimonialCardProps) => {
   );
 };
 
+/** Default fallback if API is pending */
+const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
+  {
+    id: "testimonial-chetan",
+    clientName: "Chetan",
+    clientRoleOrLocation: null,
+    quote: null,
+    videoSrc: "/videos/testimonials/chetan.mp4",
+    posterImage: null,
+    featured: true,
+    enabled: true,
+  },
+];
+
 /**
  * Testimonials ("Our Testimonials")
  *
- * Compact social-proof section featuring inline 9:16 portrait video testimonials.
+ * Database-driven social-proof section featuring inline 9:16 portrait video testimonials.
  */
 const Testimonials = () => {
   const shouldReduceMotion = useReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(DEFAULT_TESTIMONIALS);
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
 
-  const activeTestimonials = TESTIMONIALS.filter((t) => t.enabled);
+  // Fetch enabled testimonials from live database
+  useEffect(() => {
+    let isMounted = true;
+    async function loadTestimonials() {
+      try {
+        const res = await fetch("/api/testimonials");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data) && data.length > 0) {
+            setTestimonials(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load testimonials from database:", err);
+      }
+    }
+    loadTestimonials();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeTestimonials = testimonials.filter((t) => t.enabled !== false);
 
   const handleScroll = useCallback(() => {
     const track = trackRef.current;
@@ -172,6 +219,10 @@ const Testimonials = () => {
           transition: { duration: 0.6, ease: [0, 0, 0.2, 1] as const },
         },
       };
+
+  if (activeTestimonials.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-warm-white py-12 md:py-16 lg:py-20">

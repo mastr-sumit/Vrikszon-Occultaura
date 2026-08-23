@@ -12,9 +12,10 @@ export default async function AdminPage() {
   }
 
   // Load all initial datasets directly from SQLite database for fast SSR
-  const [rawProducts, courses, bookings, orders, messages] = await Promise.all([
+  const [rawProducts, courses, testimonials, bookings, orders, messages] = await Promise.all([
     prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.course.findMany({ orderBy: { createdAt: "desc" } }),
+    prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.booking.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.order.findMany({
       orderBy: { createdAt: "desc" },
@@ -40,6 +41,7 @@ export default async function AdminPage() {
     <AdminDashboardClient
       initialProducts={products}
       initialCourses={courses}
+      initialTestimonials={testimonials}
       initialBookings={bookings}
       initialOrders={orders}
       initialMessages={messages}

@@ -57,6 +57,7 @@ export const ModelName = {
   Course: 'Course',
   Order: 'Order',
   OrderItem: 'OrderItem',
+  Testimonial: 'Testimonial',
   AdminUser: 'AdminUser'
 } as const
 
@@ -173,6 +174,22 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const TestimonialScalarFieldEnum = {
+  id: 'id',
+  clientName: 'clientName',
+  clientRoleOrLocation: 'clientRoleOrLocation',
+  quote: 'quote',
+  videoSrc: 'videoSrc',
+  posterImage: 'posterImage',
+  featured: 'featured',
+  enabled: 'enabled',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TestimonialScalarFieldEnum = (typeof TestimonialScalarFieldEnum)[keyof typeof TestimonialScalarFieldEnum]
 
 
 export const AdminUserScalarFieldEnum = {

@@ -43,3 +43,18 @@ export const createCourseSchema = z.object({
 });
 
 export const updateCourseSchema = createCourseSchema.partial();
+
+/**
+ * Testimonial Validation Schemas
+ */
+export const createTestimonialSchema = z.object({
+  clientName: z.string().min(1, "Client name is required"),
+  clientRoleOrLocation: z.string().optional().nullable(),
+  quote: z.string().optional().nullable(),
+  videoSrc: z.string().optional().nullable(),
+  posterImage: z.string().optional().nullable(),
+  featured: z.boolean().default(false),
+  enabled: z.boolean().default(true),
+});
+
+export const updateTestimonialSchema = createTestimonialSchema.partial();

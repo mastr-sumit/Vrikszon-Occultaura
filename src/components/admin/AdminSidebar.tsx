@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Package,
   GraduationCap,
+  Video,
   CalendarCheck,
   ShoppingBag,
   Mail,
@@ -14,7 +15,14 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type AdminTab = "overview" | "products" | "courses" | "bookings" | "orders" | "messages";
+export type AdminTab =
+  | "overview"
+  | "products"
+  | "courses"
+  | "testimonials"
+  | "bookings"
+  | "orders"
+  | "messages";
 
 interface AdminSidebarProps {
   currentTab: AdminTab;
@@ -22,6 +30,7 @@ interface AdminSidebarProps {
   counts: {
     products: number;
     courses: number;
+    testimonials: number;
     bookings: number;
     orders: number;
     messages: number;
@@ -47,6 +56,7 @@ export function AdminSidebar({
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "products", label: "Products", icon: Package, badge: counts.products },
     { id: "courses", label: "Courses", icon: GraduationCap, badge: counts.courses },
+    { id: "testimonials", label: "Testimonials", icon: Video, badge: counts.testimonials },
     { id: "bookings", label: "Bookings", icon: CalendarCheck, badge: counts.bookings },
     { id: "orders", label: "Orders", icon: ShoppingBag, badge: counts.orders },
     { id: "messages", label: "Inquiries", icon: Mail, badge: counts.messages },

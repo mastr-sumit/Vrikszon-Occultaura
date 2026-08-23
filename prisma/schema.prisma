@@ -137,6 +137,22 @@ enum PaymentStatus {
 }
 
 // ─────────────────────────────────────────────
+// Testimonials (from /admin and homepage)
+// ─────────────────────────────────────────────
+model Testimonial {
+  id                   String   @id @default(cuid())
+  clientName           String
+  clientRoleOrLocation String?
+  quote                String?
+  videoSrc             String?
+  posterImage          String?
+  featured             Boolean  @default(false)
+  enabled              Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
 // Admin (Phase 4 — dashboard access)
 // ─────────────────────────────────────────────
 model AdminUser {
@@ -146,3 +162,4 @@ model AdminUser {
   name         String
   createdAt    DateTime @default(now())
 }
+

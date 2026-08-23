@@ -32,6 +32,10 @@ const TAB_TITLES: Record<AdminTab, { title: string; subtitle: string }> = {
     title: "Academy & Courses",
     subtitle: "Manage professional certification courses in Numerology, Vastu, and Occult Sciences.",
   },
+  testimonials: {
+    title: "Client Testimonials",
+    subtitle: "Manage verified client video stories, quotes, and homepage social proof.",
+  },
   bookings: {
     title: "Consultation Bookings",
     subtitle: "Review and manage personalized numerology and vastu consultation requests.",

@@ -6,15 +6,18 @@ import { AdminHeader } from "./AdminHeader";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { ProductsTab } from "./tabs/ProductsTab";
 import { CoursesTab } from "./tabs/CoursesTab";
+import { TestimonialsTab } from "./tabs/TestimonialsTab";
 import { BookingsTab, AdminBooking } from "./tabs/BookingsTab";
 import { OrdersTab, AdminOrder } from "./tabs/OrdersTab";
 import { MessagesTab, AdminMessage } from "./tabs/MessagesTab";
 import { AdminProduct, ProductModal } from "./modals/ProductModal";
 import { AdminCourse, CourseModal } from "./modals/CourseModal";
+import { AdminTestimonial } from "./modals/TestimonialModal";
 
 interface AdminDashboardClientProps {
   initialProducts: AdminProduct[];
   initialCourses: AdminCourse[];
+  initialTestimonials: AdminTestimonial[];
   initialBookings: AdminBooking[];
   initialOrders: AdminOrder[];
   initialMessages: AdminMessage[];
@@ -27,6 +30,7 @@ interface AdminDashboardClientProps {
 export function AdminDashboardClient({
   initialProducts,
   initialCourses,
+  initialTestimonials,
   initialBookings,
   initialOrders,
   initialMessages,
@@ -35,6 +39,7 @@ export function AdminDashboardClient({
   const [currentTab, setCurrentTab] = useState<AdminTab>("overview");
   const [products, setProducts] = useState<AdminProduct[]>(initialProducts);
   const [courses, setCourses] = useState<AdminCourse[]>(initialCourses);
+  const [testimonials, setTestimonials] = useState<AdminTestimonial[]>(initialTestimonials);
   const [bookings, setBookings] = useState<AdminBooking[]>(initialBookings);
   const [orders, setOrders] = useState<AdminOrder[]>(initialOrders);
   const [messages, setMessages] = useState<AdminMessage[]>(initialMessages);
@@ -48,9 +53,10 @@ export function AdminDashboardClient({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const [prodRes, courseRes, bookRes, orderRes, msgRes] = await Promise.all([
+      const [prodRes, courseRes, testRes, bookRes, orderRes, msgRes] = await Promise.all([
         fetch("/api/admin/products"),
         fetch("/api/admin/courses"),
+        fetch("/api/admin/testimonials"),
         fetch("/api/admin/bookings"),
         fetch("/api/admin/orders"),
         fetch("/api/admin/messages"),
@@ -58,6 +64,7 @@ export function AdminDashboardClient({
 
       if (prodRes.ok) setProducts(await prodRes.json());
       if (courseRes.ok) setCourses(await courseRes.json());
+      if (testRes.ok) setTestimonials(await testRes.json());
       if (bookRes.ok) setBookings(await bookRes.json());
       if (orderRes.ok) setOrders(await orderRes.json());
       if (msgRes.ok) setMessages(await msgRes.json());
@@ -71,6 +78,7 @@ export function AdminDashboardClient({
   const counts = {
     products: products.length,
     courses: courses.length,
+    testimonials: testimonials.length,
     bookings: bookings.length,
     orders: orders.length,
     messages: messages.filter((m) => !m.isRead).length,
@@ -126,6 +134,13 @@ export function AdminDashboardClient({
               <CoursesTab
                 courses={courses}
                 onCoursesUpdated={setCourses}
+              />
+            )}
+
+            {currentTab === "testimonials" && (
+              <TestimonialsTab
+                testimonials={testimonials}
+                onTestimonialsUpdated={setTestimonials}
               />
             )}
 
