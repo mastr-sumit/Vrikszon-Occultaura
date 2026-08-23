@@ -5,8 +5,7 @@ import { Pool } from "pg";
 /**
  * Prisma Client singleton with PostgreSQL (Supabase) driver adapter.
  *
- * Stashing both the pg.Pool and PrismaClient instances on `globalThis` in development
- * prevents exhausting the connection pool during Next.js hot module reloads.
+ * Configures SSL handling for cloud PostgreSQL and connection pooling across serverless invocations.
  */
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -15,7 +14,16 @@ const globalForPrisma = globalThis as unknown as {
 
 const connectionString = process.env.DATABASE_URL;
 
-const pool = globalForPrisma.pool ?? new Pool({ connectionString });
+const pool =
+  globalForPrisma.pool ??
+  new Pool({
+    connectionString,
+    ssl:
+      process.env.NODE_ENV === "production" || connectionString?.includes("supabase.co")
+        ? { rejectUnauthorized: false }
+        : false,
+  });
+
 const adapter = new PrismaPg(pool);
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
