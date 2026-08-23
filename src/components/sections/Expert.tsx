@@ -83,7 +83,7 @@ const Expert = () => {
                 {/* Portrait Image Container */}
                 <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-navy-900/10 bg-navy-50 shadow-md transition-all duration-500 group-hover:shadow-[0_20px_50px_rgba(8,20,35,0.18),0_0_30px_rgba(212,175,55,0.2)] group-hover:border-gold-500/40">
                   <Image
-                    src="/images/founder.jpg"
+                    src="/images/about/founder-hayaett-s-rahman.png"
                     alt="Hayaett S Rahman"
                     fill
                     className="object-cover transition-transform duration-700 ease-luxury group-hover:scale-105"

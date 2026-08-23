@@ -193,7 +193,7 @@ const OurStory = () => {
 
                 <div className="relative h-full w-full overflow-hidden rounded-[24px] border border-navy-900/10 shadow-lg">
                   <Image
-                    src="/images/our-story.png"
+                    src="/images/our-story.svg"
                     alt="Abstract atmospheric artwork representing searching for answers leading to clarity, featuring a beam of golden light emerging from cosmic navy mist into an ordered geometric constellation"
                     fill
                     sizes="(max-width: 1024px) 100vw, 560px"
