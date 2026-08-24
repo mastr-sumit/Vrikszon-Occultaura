@@ -83,7 +83,14 @@ const ContactForm = () => {
 
   const labelClasses = "text-small font-medium text-navy-900 flex items-center justify-between";
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Date constraints
+  const todayDate = new Date();
+  const todayStr = todayDate.toISOString().split("T")[0];
+  const minDobDate = new Date();
+  minDobDate.setFullYear(minDobDate.getFullYear() - 120);
+  const minDobStr = minDobDate.toISOString().split("T")[0];
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
@@ -99,7 +106,14 @@ const ContactForm = () => {
     } else if (formData.phone.trim().length < 8) {
       newErrors.phone = "Please enter a valid phone number";
     }
-    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required";
+    } else if (formData.dob > todayStr) {
+      newErrors.dob = "Date of Birth cannot be in the future";
+    } else if (formData.dob < minDobStr) {
+      newErrors.dob = "Date of Birth must be within the past 120 years";
+    }
+
     if (!formData.tob) newErrors.tob = "Time of Birth is required";
     if (!formData.pob.trim()) newErrors.pob = "Place of Birth (City, State) is required";
     if (!formData.reason) newErrors.reason = "Please select an inquiry / service type";
@@ -112,10 +126,32 @@ const ContactForm = () => {
 
     setErrors({});
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setErrors({
+          form: errData?.error || "Unable to send your message. Please try again.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 400);
+    } catch (err) {
+      console.error("Contact submission error:", err);
+      setErrors({
+        form: "A network error occurred. Please check your connection and try again.",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -186,6 +222,17 @@ const ContactForm = () => {
                 noValidate
                 className="flex flex-col gap-6 rounded-2xl border border-gold-500/30 bg-white p-6 shadow-md sm:p-10 md:p-12"
               >
+                {/* Form-level Error Alert */}
+                {errors.form && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-3 rounded-base border border-rose-500/30 bg-rose-50 p-4 text-small text-rose-800"
+                  >
+                    <span className="font-semibold text-rose-700">Error:</span>
+                    <span>{errors.form}</span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {/* Full Name */}
                   <div className="flex flex-col gap-2">
@@ -300,7 +347,7 @@ const ContactForm = () => {
                     </span>
                   </div>
 
-                  {/* Date of Birth */}
+                  {/* Date of Birth (Min: 120 yrs ago, Max: Today) */}
                   <div className="flex flex-col gap-2">
                     <label htmlFor={dobId} className={labelClasses}>
                       <span>Date of Birth <span className="text-rose-500">*</span></span>
@@ -310,6 +357,8 @@ const ContactForm = () => {
                       name="dob"
                       type="date"
                       required
+                      min={minDobStr}
+                      max={todayStr}
                       value={formData.dob}
                       onChange={(e) => handleInputChange("dob", e.target.value)}
                       className={getFieldClass(!!errors.dob)}

@@ -45,13 +45,28 @@ export async function POST(request: Request) {
 
     const data = validation.data;
 
+    const birthDetails = [
+      data.dob ? `DOB: ${data.dob}` : null,
+      data.tob ? `TOB: ${data.tob}` : null,
+      data.pob ? `POB: ${data.pob}` : null,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    const combinedMessage = [
+      birthDetails ? `[Birth Details: ${birthDetails}]` : null,
+      data.message?.trim(),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     const contactMessage = await prisma.contactMessage.create({
       data: {
         name: data.name,
         email: data.email,
         phone: data.phone || null,
         reason: data.reason,
-        message: data.message,
+        message: combinedMessage || data.message,
         isRead: false,
       },
     });

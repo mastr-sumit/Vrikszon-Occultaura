@@ -243,7 +243,28 @@ export const createContactMessageSchema = z
       .trim()
       .min(1, "Message cannot be empty")
       .max(3000, "Message cannot exceed 3000 characters"),
-    dob: z.string().trim().max(50).optional().nullable(),
+    dob: z
+      .string()
+      .trim()
+      .max(50)
+      .optional()
+      .nullable()
+      .refine(
+        (val) => {
+          if (!val) return true;
+          const parsed = new Date(val);
+          if (isNaN(parsed.getTime())) return false;
+          const today = new Date();
+          today.setHours(23, 59, 59, 999);
+          const minDate = new Date();
+          minDate.setFullYear(minDate.getFullYear() - 120);
+          minDate.setHours(0, 0, 0, 0);
+          return parsed <= today && parsed >= minDate;
+        },
+        {
+          message: "Date of birth cannot be in the future or older than 120 years",
+        }
+      ),
     tob: z.string().trim().max(50).optional().nullable(),
     pob: z.string().trim().max(200).optional().nullable(),
   })
