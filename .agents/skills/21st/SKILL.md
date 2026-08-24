@@ -9,9 +9,9 @@ Connect to the [21st.dev](https://21st.dev) component catalog (12,000+ productio
 
 ## Configured Credentials
 
-- **21st API Key**: `21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6b68e6cda5b3c0`
+- **21st API Key**: `YOUR_21ST_API_KEY`
 - **MCP Endpoint**: `https://21st.dev/api/mcp`
-- **Header**: `x-api-key: 21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6b68e6cda5b3c0`
+- **Header**: `x-api-key: YOUR_21ST_API_KEY`
 
 ## When to Use
 
@@ -35,7 +35,7 @@ Search the 21st library for specific component categories:
 When using the 21st CLI in terminal:
 ```bash
 # Set API key for the session
-export API_KEY_21ST="21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6b68e6cda5b3c0"
+export API_KEY_21ST="YOUR_21ST_API_KEY"
 
 # Search catalog
 21st search "<query>"
@@ -57,7 +57,7 @@ export API_KEY_21ST="21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6
     "21st": {
       "url": "https://21st.dev/api/mcp",
       "headers": {
-        "x-api-key": "21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6b68e6cda5b3c0"
+        "x-api-key": "YOUR_21ST_API_KEY"
       }
     }
   }
@@ -72,7 +72,7 @@ export API_KEY_21ST="21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6
       "command": "npx",
       "args": ["-y", "@21st-dev/magic@latest"],
       "env": {
-        "API_KEY": "21st_sk_b18afa388131814b951a8a55b5a000fa33f1ac7dbed861f66f6b68e6cda5b3c0"
+        "API_KEY": "YOUR_21ST_API_KEY"
       }
     }
   }
