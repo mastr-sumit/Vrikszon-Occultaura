@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { updateProductSchema } from "@/lib/validations/admin";
+import { updateProductSchema, resourceIdSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson, validateInput } from "@/lib/validations/validator";
 import { formatProduct } from "../route";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * GET /api/admin/products/[id] — Get single product by id
@@ -18,9 +20,13 @@ export async function GET(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!product) {
@@ -29,11 +35,7 @@ export async function GET(
 
     return NextResponse.json(formatProduct(product));
   } catch (error) {
-    console.error("GET /api/admin/products/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch product" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/products/[id]", "Failed to fetch product.");
   }
 }
 
@@ -51,26 +53,22 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingProduct = await prisma.product.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingProduct) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateProductSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateProductSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
@@ -100,7 +98,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.product.update({
-      where: { id },
+      where: { id: idValidation.data },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.name !== undefined && { name: data.name }),
@@ -120,11 +118,7 @@ export async function PATCH(
 
     return NextResponse.json(formatProduct(updated));
   } catch (error) {
-    console.error("PATCH /api/admin/products/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to update product" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/products/[id]", "Failed to update product.");
   }
 }
 
@@ -142,9 +136,13 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingProduct = await prisma.product.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingProduct) {
@@ -152,15 +150,14 @@ export async function DELETE(
     }
 
     await prisma.product.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
-    return NextResponse.json({ success: true, message: `Product "${existingProduct.name}" deleted successfully` });
+    return NextResponse.json({
+      success: true,
+      message: `Product "${existingProduct.name}" deleted successfully`,
+    });
   } catch (error) {
-    console.error("DELETE /api/admin/products/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete product" },
-      { status: 500 }
-    );
+    return handleServerError(error, "DELETE /api/admin/products/[id]", "Failed to delete product.");
   }
 }

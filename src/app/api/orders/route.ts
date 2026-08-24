@@ -1,25 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
-
-const createOrderSchema = z.object({
-  fullName: z.string().min(1, "Full Name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  addressLine1: z.string().min(1, "Address Line 1 is required"),
-  addressLine2: z.string().optional().nullable(),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  pincode: z.string().min(6, "Pincode must be at least 6 digits"),
-  items: z
-    .array(
-      z.object({
-        productId: z.string().min(1, "Product ID is required"),
-        quantity: z.number().int().positive("Quantity must be a positive integer"),
-      })
-    )
-    .min(1, "Order must contain at least one item"),
-});
+import { createOrderSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson } from "@/lib/validations/validator";
+import { checkRouteRateLimit } from "@/lib/rate-limit";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * Generate human-readable order number: VO-YYYYMMDD-XXXX
@@ -36,17 +20,16 @@ function generateOrderNumber(): string {
 
 export async function POST(request: Request) {
   try {
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    // 1. Rate Limiting Check (Strict tier for Checkout & Order placement)
+    const rateLimit = checkRouteRateLimit(request, "strict");
+    if (!rateLimit.allowed && rateLimit.response) {
+      return rateLimit.response;
     }
 
-    const validation = createOrderSchema.safeParse(json);
+    // 2. Strict Input Validation (Type, Length, Format, Unknown fields rejection)
+    const validation = await parseAndValidateJson(request, createOrderSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
@@ -105,14 +88,14 @@ export async function POST(request: Request) {
     const order = await prisma.order.create({
       data: {
         orderNumber,
-        fullName: data.fullName.trim(),
-        email: data.email.trim().toLowerCase(),
-        phone: data.phone.trim(),
-        addressLine1: data.addressLine1.trim(),
-        addressLine2: data.addressLine2?.trim() || null,
-        city: data.city.trim(),
-        state: data.state.trim(),
-        pincode: data.pincode.trim(),
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        addressLine1: data.addressLine1,
+        addressLine2: data.addressLine2 || null,
+        city: data.city,
+        state: data.state,
+        pincode: data.pincode,
         totalPrice,
         status: "PENDING",
         paymentStatus: "UNPAID",
@@ -146,10 +129,10 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/orders error:", error);
-    return NextResponse.json(
-      { error: "Failed to place order. Please try again or contact support." },
-      { status: 500 }
+    return handleServerError(
+      error,
+      "POST /api/orders",
+      "Failed to process your order. Please try again or reach out to customer support."
     );
   }
 }

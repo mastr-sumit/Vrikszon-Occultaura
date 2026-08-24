@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { updateTestimonialSchema } from "@/lib/validations/admin";
+import { updateTestimonialSchema, resourceIdSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson, validateInput } from "@/lib/validations/validator";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * GET /api/admin/testimonials/[id] — Get single testimonial by id
@@ -17,9 +19,13 @@ export async function GET(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const testimonial = await prisma.testimonial.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!testimonial) {
@@ -28,11 +34,7 @@ export async function GET(
 
     return NextResponse.json(testimonial);
   } catch (error) {
-    console.error("GET /api/admin/testimonials/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch testimonial" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/testimonials/[id]", "Failed to fetch testimonial.");
   }
 }
 
@@ -50,32 +52,28 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
-    const existing = await prisma.testimonial.findUnique({
-      where: { id },
+    const existingTestimonial = await prisma.testimonial.findUnique({
+      where: { id: idValidation.data },
     });
 
-    if (!existing) {
+    if (!existingTestimonial) {
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateTestimonialSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateTestimonialSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
 
     const updated = await prisma.testimonial.update({
-      where: { id },
+      where: { id: idValidation.data },
       data: {
         ...(data.clientName !== undefined && { clientName: data.clientName }),
         ...(data.clientRoleOrLocation !== undefined && { clientRoleOrLocation: data.clientRoleOrLocation }),
@@ -89,11 +87,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/admin/testimonials/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to update testimonial" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/testimonials/[id]", "Failed to update testimonial.");
   }
 }
 
@@ -111,28 +105,28 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
-    const existing = await prisma.testimonial.findUnique({
-      where: { id },
+    const existingTestimonial = await prisma.testimonial.findUnique({
+      where: { id: idValidation.data },
     });
 
-    if (!existing) {
+    if (!existingTestimonial) {
       return NextResponse.json({ error: "Testimonial not found" }, { status: 404 });
     }
 
     await prisma.testimonial.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Testimonial from "${existing.clientName}" deleted successfully`,
+      message: `Testimonial for "${existingTestimonial.clientName}" deleted successfully`,
     });
   } catch (error) {
-    console.error("DELETE /api/admin/testimonials/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete testimonial" },
-      { status: 500 }
-    );
+    return handleServerError(error, "DELETE /api/admin/testimonials/[id]", "Failed to delete testimonial.");
   }
 }

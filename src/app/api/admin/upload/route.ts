@@ -2,27 +2,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import path from "path";
 import fs from "fs";
+import { checkRouteRateLimit } from "@/lib/rate-limit";
+import { handleServerError } from "@/lib/errors";
+import {
+  validateImageMagicBytes,
+  validateVideoMagicBytes,
+} from "@/lib/validations/file-security";
 
 export const dynamic = "force-dynamic";
-
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "image/svg+xml",
-  "image/gif",
-];
-
-const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".svg", ".gif"];
-
-const ALLOWED_VIDEO_TYPES = [
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-];
-
-const ALLOWED_VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov"];
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
@@ -39,6 +26,13 @@ function slugifyFileName(rawName: string): string {
 
 export async function POST(request: Request) {
   try {
+    // 1. Strict rate limit check for file uploads
+    const rateLimit = checkRouteRateLimit(request, "strict");
+    if (!rateLimit.allowed && rateLimit.response) {
+      return rateLimit.response;
+    }
+
+    // 2. Authentication check
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -55,19 +49,49 @@ export async function POST(request: Request) {
     const typeParam = (formData.get("type") as string) || searchParams.get("type") || "image";
     const uploadType = typeParam.toLowerCase() === "video" ? "video" : "image";
 
+    // 3. File size limit enforcement
+    const maxSize = uploadType === "image" ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
+    if (file.size > maxSize) {
+      const maxMb = (maxSize / (1024 * 1024)).toFixed(0);
+      return NextResponse.json(
+        { error: `File size exceeds the maximum limit of ${maxMb}MB.` },
+        { status: 400 }
+      );
+    }
+
+    // 4. Read file buffer for binary content inspection
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // 5. Binary Magic Bytes & Content Inspection (prevent MIME spoofing and executable uploads)
+    const contentValidation =
+      uploadType === "image"
+        ? validateImageMagicBytes(buffer)
+        : validateVideoMagicBytes(buffer);
+
+    if (!contentValidation.valid || !contentValidation.extension) {
+      return NextResponse.json(
+        {
+          error:
+            contentValidation.error ||
+            "File content failed security inspection or format is unsupported.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // 6. Path Traversal & Folder Isolation Protection
     const rawFolder =
       (formData.get("folder") as string) ||
       searchParams.get("folder") ||
       (uploadType === "video" ? "videos/testimonials" : "images/products");
 
-    // Prevent directory traversal attacks
     const sanitizedFolder = rawFolder
       .replace(/\\/g, "/")
       .replace(/\.\./g, "")
       .replace(/^\/+/, "")
       .replace(/\/+$/, "");
 
-    // Validate allowed folder namespace
     if (!sanitizedFolder.startsWith("images") && !sanitizedFolder.startsWith("videos")) {
       return NextResponse.json(
         { error: "Invalid target upload folder. Must start with 'images' or 'videos'." },
@@ -75,73 +99,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const rawExtension = path.extname(file.name).toLowerCase();
-    const mimeType = file.type.toLowerCase();
-
-    if (uploadType === "image") {
-      const isAllowedExt = ALLOWED_IMAGE_EXTENSIONS.includes(rawExtension);
-      const isAllowedMime = ALLOWED_IMAGE_TYPES.includes(mimeType);
-
-      if (!isAllowedExt && !isAllowedMime) {
-        return NextResponse.json(
-          {
-            error:
-              "Invalid image file format. Supported formats: JPG, PNG, WebP, SVG, GIF.",
-          },
-          { status: 400 }
-        );
-      }
-
-      if (file.size > MAX_IMAGE_SIZE) {
-        return NextResponse.json(
-          {
-            error: `Image file is too large (${(file.size / (1024 * 1024)).toFixed(
-              1
-            )}MB). Maximum allowed size is 10MB.`,
-          },
-          { status: 400 }
-        );
-      }
-    } else {
-      const isAllowedExt = ALLOWED_VIDEO_EXTENSIONS.includes(rawExtension);
-      const isAllowedMime = ALLOWED_VIDEO_TYPES.includes(mimeType);
-
-      if (!isAllowedExt && !isAllowedMime) {
-        return NextResponse.json(
-          {
-            error: "Invalid video file format. Supported formats: MP4, WebM.",
-          },
-          { status: 400 }
-        );
-      }
-
-      if (file.size > MAX_VIDEO_SIZE) {
-        return NextResponse.json(
-          {
-            error: `Video file is too large (${(file.size / (1024 * 1024)).toFixed(
-              1
-            )}MB). Maximum allowed size is 100MB.`,
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Generate clean sanitized filename with random collision avoidance
-    const extension = rawExtension || (uploadType === "image" ? ".jpg" : ".mp4");
+    // 7. Secure Filename Generation (Using verified extension, never trusting client extension)
+    const secureExtension = contentValidation.extension;
     const baseSlug = slugifyFileName(file.name);
-    const randomSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
-    const finalFilename = `${baseSlug}-${randomSuffix}${extension}`;
+    const randomSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+    const finalFilename = `${baseSlug}-${randomSuffix}${secureExtension}`;
 
-    // Target directory inside public/
+    // 8. Write to isolated storage directory
     const targetDir = path.join(process.cwd(), "public", sanitizedFolder);
     await fs.promises.mkdir(targetDir, { recursive: true });
 
-    // Save file buffer to target directory
     const targetFilePath = path.join(targetDir, finalFilename);
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     await fs.promises.writeFile(targetFilePath, buffer);
 
     const publicUrl = `/${sanitizedFolder}/${finalFilename}`;
@@ -152,15 +120,11 @@ export async function POST(request: Request) {
         url: publicUrl,
         filename: finalFilename,
         size: file.size,
-        type: file.type,
+        mimeType: contentValidation.mimeType,
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/admin/upload error:", error);
-    return NextResponse.json(
-      { error: "Failed to upload file. Please try again." },
-      { status: 500 }
-    );
+    return handleServerError(error, "POST /api/admin/upload", "Failed to upload file safely. Please try again.");
   }
 }

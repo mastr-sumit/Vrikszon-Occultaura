@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { createContactMessageSchema, updateContactMessageSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson } from "@/lib/validations/validator";
+import { checkRouteRateLimit } from "@/lib/rate-limit";
+import { handleServerError } from "@/lib/errors";
 
-const updateMessageSchema = z.object({
-  id: z.string().min(1, "Message ID is required"),
-  isRead: z.boolean(),
-});
-
+/**
+ * GET /api/admin/messages — List all contact messages ordered by createdAt desc
+ */
 export async function GET() {
   try {
     const session = await auth();
@@ -21,14 +22,49 @@ export async function GET() {
 
     return NextResponse.json(messages);
   } catch (error) {
-    console.error("GET /api/admin/messages error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch contact messages" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/messages", "Failed to fetch messages.");
   }
 }
 
+/**
+ * POST /api/admin/messages — Create a new contact message (also used by public contact form)
+ */
+export async function POST(request: Request) {
+  try {
+    // 1. Rate limiting check (public form submission)
+    const rateLimit = checkRouteRateLimit(request, "public");
+    if (!rateLimit.allowed && rateLimit.response) {
+      return rateLimit.response;
+    }
+
+    // 2. Strict validation
+    const validation = await parseAndValidateJson(request, createContactMessageSchema);
+    if (!validation.success) {
+      return validation.response;
+    }
+
+    const data = validation.data;
+
+    const contactMessage = await prisma.contactMessage.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        reason: data.reason,
+        message: data.message,
+        isRead: false,
+      },
+    });
+
+    return NextResponse.json(contactMessage, { status: 201 });
+  } catch (error) {
+    return handleServerError(error, "POST /api/admin/messages", "Failed to send your message. Please try again.");
+  }
+}
+
+/**
+ * PATCH /api/admin/messages — Mark message as read/unread by id
+ */
 export async function PATCH(request: Request) {
   try {
     const session = await auth();
@@ -36,23 +72,15 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateMessageSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateContactMessageSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
-    const { id, isRead } = validation.data;
+    const data = validation.data;
 
     const existing = await prisma.contactMessage.findUnique({
-      where: { id },
+      where: { id: data.id },
     });
 
     if (!existing) {
@@ -60,16 +88,14 @@ export async function PATCH(request: Request) {
     }
 
     const updated = await prisma.contactMessage.update({
-      where: { id },
-      data: { isRead },
+      where: { id: data.id },
+      data: {
+        isRead: data.isRead,
+      },
     });
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/admin/messages error:", error);
-    return NextResponse.json(
-      { error: "Failed to update message status" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/messages", "Failed to update message status.");
   }
 }

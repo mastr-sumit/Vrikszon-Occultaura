@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
+import { createBookingSchema, updateBookingSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson } from "@/lib/validations/validator";
+import { checkRouteRateLimit } from "@/lib/rate-limit";
+import { handleServerError } from "@/lib/errors";
 
-const updateBookingStatusSchema = z.object({
-  id: z.string().min(1, "Booking ID is required"),
-  status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]),
-});
-
+/**
+ * GET /api/admin/bookings — List all consultation bookings ordered by createdAt desc
+ */
 export async function GET() {
   try {
     const session = await auth();
@@ -21,14 +22,73 @@ export async function GET() {
 
     return NextResponse.json(bookings);
   } catch (error) {
-    console.error("GET /api/admin/bookings error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch bookings" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/bookings", "Failed to fetch bookings.");
   }
 }
 
+/**
+ * POST /api/admin/bookings — Create a new consultation booking (also used by public form)
+ */
+export async function POST(request: Request) {
+  try {
+    // 1. Rate limiting check (public form submission)
+    const rateLimit = checkRouteRateLimit(request, "public");
+    if (!rateLimit.allowed && rateLimit.response) {
+      return rateLimit.response;
+    }
+
+    // 2. Strict validation
+    const validation = await parseAndValidateJson(request, createBookingSchema);
+    if (!validation.success) {
+      return validation.response;
+    }
+
+    const data = validation.data;
+
+    let preferredDate: Date | null = null;
+    if (data.preferredDate) {
+      const parsed = new Date(data.preferredDate);
+      if (!isNaN(parsed.getTime())) {
+        preferredDate = parsed;
+      }
+    }
+
+    const birthDetails = [
+      data.dob ? `DOB: ${data.dob}` : null,
+      data.tob ? `TOB: ${data.tob}` : null,
+      data.pob ? `POB: ${data.pob}` : null,
+    ]
+      .filter(Boolean)
+      .join(" | ");
+
+    const combinedMessage = [
+      birthDetails ? `[Birth Details: ${birthDetails}]` : null,
+      data.message?.trim(),
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    const booking = await prisma.booking.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        service: data.service,
+        preferredDate,
+        message: combinedMessage || data.message || null,
+        status: "PENDING",
+      },
+    });
+
+    return NextResponse.json(booking, { status: 201 });
+  } catch (error) {
+    return handleServerError(error, "POST /api/admin/bookings", "Failed to submit booking request.");
+  }
+}
+
+/**
+ * PATCH /api/admin/bookings — Update booking status by id
+ */
 export async function PATCH(request: Request) {
   try {
     const session = await auth();
@@ -36,40 +96,30 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateBookingStatusSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateBookingSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
-    const { id, status } = validation.data;
+    const data = validation.data;
 
-    const existing = await prisma.booking.findUnique({
-      where: { id },
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id: data.id },
     });
 
-    if (!existing) {
+    if (!existingBooking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
     const updated = await prisma.booking.update({
-      where: { id },
-      data: { status },
+      where: { id: data.id },
+      data: {
+        status: data.status,
+      },
     });
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/admin/bookings error:", error);
-    return NextResponse.json(
-      { error: "Failed to update booking status" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/bookings", "Failed to update booking status.");
   }
 }

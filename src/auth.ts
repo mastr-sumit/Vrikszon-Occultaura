@@ -1,8 +1,11 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "./auth.config";
+import { rateLimiter, extractClientIp } from "@/lib/rate-limit";
+import { loginSchema } from "@/lib/validations/schemas";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -14,45 +17,72 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        // 1. Strict Schema Validation (Type, Length, Format, Unknown fields rejection)
+        const validation = loginSchema.safeParse(credentials);
+        if (!validation.success) {
+          console.warn("[AUTH] Credentials validation rejected:", validation.error.issues);
           return null;
         }
 
-        const email = String(credentials.email).toLowerCase().trim();
-        const password = String(credentials.password);
+        const { email, password } = validation.data;
+
+        // 2. Extract Client IP & Check Per-IP and Per-Account Rate Limits with Exponential Backoff
+        let clientIp = "127.0.0.1";
+        try {
+          const reqHeaders = await headers();
+          clientIp = extractClientIp(reqHeaders);
+        } catch {
+          // Fallback if headers() context unavailable
+        }
+
+        const rateLimitStatus = rateLimiter.checkAuthLimits(clientIp, email);
+        if (!rateLimitStatus.allowed) {
+          console.warn(
+            `[AUTH RATE LIMITED] IP: ${clientIp}, Email: ${email}, RetryAfter: ${rateLimitStatus.retryAfterSec}s, Reason: ${rateLimitStatus.reason}`
+          );
+          throw new Error(
+            rateLimitStatus.reason ||
+              `Too many login attempts. Please wait ${rateLimitStatus.retryAfterSec || 30} seconds before trying again.`
+          );
+        }
 
         try {
-          console.log("[AUTH DEBUG] authorize() called for email:", email);
-          console.log("[AUTH DEBUG] process.env.DATABASE_URL exists:", !!process.env.DATABASE_URL);
-          console.log("[AUTH DEBUG] process.env.AUTH_SECRET exists:", !!(process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET));
-
           const admin = await prisma.adminUser.findUnique({
             where: { email },
           });
 
-          console.log("[AUTH DEBUG] Admin user query result:", admin ? { id: admin.id, email: admin.email, hasPasswordHash: !!admin.passwordHash } : "NOT_FOUND");
-
           if (!admin || !admin.passwordHash) {
-            console.warn("[AUTH DEBUG] Admin user record or passwordHash missing");
+            // Record failure to apply exponential backoff against account enumeration
+            rateLimiter.recordAuthFailure(clientIp, email);
+            console.warn("[AUTH] Admin user record not found for:", email);
             return null;
           }
 
           const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
-          console.log("[AUTH DEBUG] bcrypt.compare result:", isPasswordValid);
 
           if (!isPasswordValid) {
-            console.warn("[AUTH DEBUG] Password compare failed for:", email);
+            // Increment failure count and trigger exponential backoff penalty
+            const failureInfo = rateLimiter.recordAuthFailure(clientIp, email);
+            console.warn(
+              `[AUTH] Invalid password for ${email} from ${clientIp}. Total failures: ${failureInfo.totalFailures}, Next backoff: ${failureInfo.backoffSec}s`
+            );
             return null;
           }
 
-          console.log("[AUTH DEBUG] Authentication successful for:", email);
+          // Successful authentication: clear all rate-limiting and backoff penalties
+          rateLimiter.recordAuthSuccess(clientIp, email);
+          console.log("[AUTH] Authentication successful for:", email);
+
           return {
             id: admin.id,
             email: admin.email,
             name: admin.name,
           };
         } catch (error) {
-          console.error("[AUTH DEBUG] Exception in authorize():", error);
+          if (error instanceof Error && error.message.includes("Too many")) {
+            throw error;
+          }
+          console.error("[AUTH] Exception during authorization:", error);
           return null;
         }
       },

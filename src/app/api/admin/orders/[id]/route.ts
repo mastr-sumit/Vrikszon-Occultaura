@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
-
-const updateOrderSchema = z.object({
-  status: z.enum(["PENDING", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]).optional(),
-  paymentStatus: z.enum(["UNPAID", "PAID", "REFUNDED"]).optional(),
-});
+import { updateOrderSchema, resourceIdSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson, validateInput } from "@/lib/validations/validator";
+import { handleServerError } from "@/lib/errors";
 
 /**
- * GET /api/admin/orders/[id] — Get single order with items
+ * GET /api/admin/orders/[id] — Get single order by id with items
  */
 export async function GET(
   _request: Request,
@@ -22,9 +19,13 @@ export async function GET(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const order = await prisma.order.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
       include: {
         items: {
           include: {
@@ -40,16 +41,12 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error) {
-    console.error("GET /api/admin/orders/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch order" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/orders/[id]", "Failed to fetch order.");
   }
 }
 
 /**
- * PATCH /api/admin/orders/[id] — Update order status & paymentStatus
+ * PATCH /api/admin/orders/[id] — Update order status / payment status
  */
 export async function PATCH(
   request: Request,
@@ -62,35 +59,31 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingOrder = await prisma.order.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingOrder) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateOrderSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateOrderSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
-    const { status, paymentStatus } = validation.data;
+    const data = validation.data;
 
     const updated = await prisma.order.update({
-      where: { id },
+      where: { id: idValidation.data },
       data: {
-        ...(status && { status }),
-        ...(paymentStatus && { paymentStatus }),
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.paymentStatus !== undefined && { paymentStatus: data.paymentStatus }),
       },
       include: {
         items: {
@@ -103,16 +96,12 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/admin/orders/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to update order" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/orders/[id]", "Failed to update order status.");
   }
 }
 
 /**
- * DELETE /api/admin/orders/[id] — Delete order
+ * DELETE /api/admin/orders/[id] — Delete order by id
  */
 export async function DELETE(
   _request: Request,
@@ -125,9 +114,13 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingOrder = await prisma.order.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingOrder) {
@@ -135,18 +128,14 @@ export async function DELETE(
     }
 
     await prisma.order.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     return NextResponse.json({
       success: true,
-      message: `Order "${existingOrder.orderNumber}" deleted successfully`,
+      message: `Order #${existingOrder.orderNumber} deleted successfully`,
     });
   } catch (error) {
-    console.error("DELETE /api/admin/orders/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete order" },
-      { status: 500 }
-    );
+    return handleServerError(error, "DELETE /api/admin/orders/[id]", "Failed to delete order.");
   }
 }

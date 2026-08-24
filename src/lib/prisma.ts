@@ -7,16 +7,22 @@ import { Pool } from "pg";
  *
  * Configures robust connection handling, trimming, quotes sanitization,
  * and SSL support across serverless environments.
+ * Strictly uses DATABASE_URL from process.env with zero hardcoded credentials.
  */
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
   pool: Pool | undefined;
 };
 
-function normalizeConnectionString(raw: string): string {
+function normalizeConnectionString(raw?: string): string {
   const url = (raw || "").trim().replace(/^["']|["']$/g, "");
   if (!url) {
-    return "postgresql://postgres.kqachpdbtvmarqfytxht:Administratio123@aws-0-ap-south-1.pooler.supabase.com:6543/postgres";
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "DATABASE_URL environment variable is missing. Please set DATABASE_URL in your environment or hosting dashboard."
+      );
+    }
+    return "";
   }
 
   // Convert IPv6 direct Supabase host (db.[ref].supabase.co) to IPv4 Pooler host for serverless environments (Netlify/AWS Lambda)
@@ -30,9 +36,10 @@ function normalizeConnectionString(raw: string): string {
   return url;
 }
 
-const connectionString = normalizeConnectionString(process.env.DATABASE_URL || "");
+const connectionString = normalizeConnectionString(process.env.DATABASE_URL);
 
-const isLocalhost = connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+const isLocalhost =
+  connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
 
 const pool =
   globalForPrisma.pool ??

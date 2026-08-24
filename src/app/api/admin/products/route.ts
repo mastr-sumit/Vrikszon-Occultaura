@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { createProductSchema } from "@/lib/validations/admin";
+import { createProductSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson } from "@/lib/validations/validator";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * Helper to parse product benefits JSON string into array
@@ -56,11 +58,7 @@ export async function GET() {
 
     return NextResponse.json(products.map(formatProduct));
   } catch (error) {
-    console.error("GET /api/admin/products error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch products" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/products", "Failed to fetch products.");
   }
 }
 
@@ -74,17 +72,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = createProductSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, createProductSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
@@ -128,10 +118,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(formatProduct(product), { status: 201 });
   } catch (error) {
-    console.error("POST /api/admin/products error:", error);
-    return NextResponse.json(
-      { error: "Failed to create product" },
-      { status: 500 }
-    );
+    return handleServerError(error, "POST /api/admin/products", "Failed to create product.");
   }
 }

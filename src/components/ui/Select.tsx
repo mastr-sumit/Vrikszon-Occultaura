@@ -22,6 +22,7 @@ export interface SelectProps {
   disabled?: boolean;
   className?: string;
   ariaLabel?: string;
+  variant?: "dark" | "light";
 }
 
 export const Select = ({
@@ -36,6 +37,7 @@ export const Select = ({
   disabled = false,
   className,
   ariaLabel,
+  variant = "dark",
 }: SelectProps) => {
   const generatedId = useId();
   const selectId = id || generatedId;
@@ -52,6 +54,8 @@ export const Select = ({
 
   const selectedValue = externalValue !== undefined ? externalValue : internalValue;
   const selectedOption = options.find((opt) => opt.value === selectedValue);
+
+  const isLight = variant === "light";
 
   // Close on outside click
   useEffect(() => {
@@ -157,19 +161,28 @@ export const Select = ({
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleKeyDown}
         className={cn(
-          "flex h-[52px] w-full items-center justify-between rounded-base border border-white/[0.15] bg-white/[0.05] px-4 text-left text-body text-white transition-all duration-200 cursor-pointer",
-          "focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40",
-          isOpen && "border-gold-500 ring-2 ring-gold-500/40",
+          "flex h-[52px] w-full items-center justify-between rounded-base border px-4 text-left text-body transition-all duration-200 cursor-pointer",
+          isLight
+            ? "border-navy-900/15 bg-white text-navy-950 focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/30"
+            : "border-white/[0.15] bg-white/[0.05] text-white focus:border-gold-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40",
+          isOpen && (isLight ? "border-gold-500 ring-2 ring-gold-500/30" : "border-gold-500 ring-2 ring-gold-500/40"),
           className
         )}
       >
-        <span className={cn("truncate", !selectedOption && "text-white/40")}>
+        <span
+          className={cn(
+            "truncate",
+            !selectedOption && (isLight ? "text-navy-900/40 font-normal" : "text-white/40 font-normal"),
+            selectedOption && (isLight ? "text-navy-950 font-normal" : "text-white font-normal")
+          )}
+        >
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
           className={cn(
-            "h-5 w-5 shrink-0 text-gold-400 transition-transform duration-300",
-            isOpen && "rotate-180 text-gold-300"
+            "h-5 w-5 shrink-0 transition-transform duration-300",
+            isLight ? "text-gold-600" : "text-gold-400",
+            isOpen && (isLight ? "rotate-180 text-gold-700" : "rotate-180 text-gold-300")
           )}
         />
       </button>
@@ -187,7 +200,10 @@ export const Select = ({
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
             className={cn(
-              "absolute left-0 top-full z-50 max-h-64 w-full overflow-y-auto rounded-base border border-white/20 bg-navy-950/95 p-1.5 shadow-2xl backdrop-blur-xl",
+              "absolute left-0 top-full z-50 max-h-64 w-full overflow-y-auto rounded-base border p-1.5 shadow-2xl backdrop-blur-xl",
+              isLight
+                ? "border-navy-900/15 bg-white shadow-xl"
+                : "border-white/20 bg-navy-950/95 shadow-2xl",
               "[-ms-overflow-style:none] [scrollbar-width:thin] [scrollbar-color:rgba(212,175,55,0.3)_transparent]"
             )}
           >
@@ -204,13 +220,29 @@ export const Select = ({
                   onClick={() => selectOption(option.value)}
                   onMouseEnter={() => setFocusedIndex(idx)}
                   className={cn(
-                    "flex items-center justify-between rounded-sm px-3.5 py-2.5 text-body-sm text-white/90 transition-colors duration-150 cursor-pointer select-none",
-                    isFocused && "bg-white/10 text-gold-300",
-                    isSelected && "bg-gold-500/20 text-gold-400 font-semibold"
+                    "flex items-center justify-between rounded-sm px-3.5 py-2.5 text-body-sm transition-colors duration-150 cursor-pointer select-none",
+                    isLight
+                      ? cn(
+                          "text-navy-900 hover:bg-navy-900/5 hover:text-navy-950",
+                          isFocused && "bg-navy-900/5 text-navy-950",
+                          isSelected && "bg-gold-500/15 text-gold-800 font-semibold"
+                        )
+                      : cn(
+                          "text-white/90 hover:bg-white/10 hover:text-white",
+                          isFocused && "bg-white/10 text-gold-300",
+                          isSelected && "bg-gold-500/20 text-gold-400 font-semibold"
+                        )
                   )}
                 >
                   <span className="truncate">{option.label}</span>
-                  {isSelected && <Check className="h-4 w-4 shrink-0 text-gold-400" />}
+                  {isSelected && (
+                    <Check
+                      className={cn(
+                        "h-4 w-4 shrink-0",
+                        isLight ? "text-gold-700" : "text-gold-400"
+                      )}
+                    />
+                  )}
                 </li>
               );
             })}

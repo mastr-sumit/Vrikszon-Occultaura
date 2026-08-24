@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { createTestimonialSchema } from "@/lib/validations/admin";
+import { createTestimonialSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson } from "@/lib/validations/validator";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * GET /api/admin/testimonials — List all testimonials ordered by createdAt desc
@@ -19,11 +21,7 @@ export async function GET() {
 
     return NextResponse.json(testimonials);
   } catch (error) {
-    console.error("GET /api/admin/testimonials error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch testimonials" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/testimonials", "Failed to fetch testimonials.");
   }
 }
 
@@ -37,17 +35,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = createTestimonialSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, createTestimonialSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
@@ -66,10 +56,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json(testimonial, { status: 201 });
   } catch (error) {
-    console.error("POST /api/admin/testimonials error:", error);
-    return NextResponse.json(
-      { error: "Failed to create testimonial" },
-      { status: 500 }
-    );
+    return handleServerError(error, "POST /api/admin/testimonials", "Failed to create testimonial.");
   }
 }

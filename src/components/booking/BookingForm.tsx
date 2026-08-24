@@ -154,7 +154,18 @@ function BookingFormContent() {
 
   const labelClasses = "text-small font-medium text-navy-900 flex items-center justify-between";
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  // Date constraints
+  const todayDate = new Date();
+  const todayStr = todayDate.toISOString().split("T")[0];
+  const minDobDate = new Date();
+  minDobDate.setFullYear(minDobDate.getFullYear() - 120);
+  const minDobStr = minDobDate.toISOString().split("T")[0];
+
+  const maxPreferredDate = new Date();
+  maxPreferredDate.setDate(maxPreferredDate.getDate() + 90);
+  const maxPreferredDateStr = maxPreferredDate.toISOString().split("T")[0];
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitting) return;
 
@@ -170,11 +181,26 @@ function BookingFormContent() {
     } else if (formData.phone.trim().length < 8) {
       newErrors.phone = "Please enter a valid phone number";
     }
-    if (!formData.dob) newErrors.dob = "Date of Birth is required for chart analysis";
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required for chart analysis";
+    } else if (formData.dob > todayStr) {
+      newErrors.dob = "Date of Birth cannot be in the future";
+    } else if (formData.dob < minDobStr) {
+      newErrors.dob = "Date of Birth must be within the past 120 years";
+    }
+
     if (!formData.tob) newErrors.tob = "Time of Birth is required";
     if (!formData.pob.trim()) newErrors.pob = "Place of Birth (City, State) is required";
     if (!formData.service) newErrors.service = "Please select a service or consultation type";
-    if (!formData.preferredDate) newErrors.preferredDate = "Please select your preferred session date";
+
+    if (!formData.preferredDate) {
+      newErrors.preferredDate = "Please select your preferred session date";
+    } else if (formData.preferredDate < todayStr) {
+      newErrors.preferredDate = "Preferred session date cannot be in the past";
+    } else if (formData.preferredDate > maxPreferredDateStr) {
+      newErrors.preferredDate = "Preferred session date must be within the next 90 days";
+    }
+
     if (!formData.message.trim()) newErrors.message = "Please share your questions or notes";
 
     if (Object.keys(newErrors).length > 0) {
@@ -184,10 +210,32 @@ function BookingFormContent() {
 
     setErrors({});
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        setErrors({
+          form: errData?.error || "Unable to submit your booking request. Please try again.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 400);
+    } catch (err) {
+      console.error("Booking submission error:", err);
+      setErrors({
+        form: "A network error occurred. Please check your connection and try again.",
+      });
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -349,6 +397,17 @@ function BookingFormContent() {
                   </p>
                 </div>
 
+                {/* Form-level Error Alert */}
+                {errors.form && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-3 rounded-base border border-rose-500/30 bg-rose-50 p-4 text-small text-rose-800"
+                  >
+                    <span className="font-semibold text-rose-700">Error:</span>
+                    <span>{errors.form}</span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   {/* Full Name */}
                   <div className="flex flex-col gap-2">
@@ -413,7 +472,7 @@ function BookingFormContent() {
                     )}
                   </div>
 
-                  {/* Preferred Date */}
+                  {/* Preferred Date (Min: Today, Max: Today + 90 days) */}
                   <div className="flex flex-col gap-2">
                     <label htmlFor={dateId} className={labelClasses}>
                       <span>Preferred Session Date <span className="text-rose-500">*</span></span>
@@ -423,6 +482,8 @@ function BookingFormContent() {
                       name="preferredDate"
                       type="date"
                       required
+                      min={todayStr}
+                      max={maxPreferredDateStr}
                       value={formData.preferredDate}
                       onChange={(e) => handleInputChange("preferredDate", e.target.value)}
                       className={getFieldClass(!!errors.preferredDate)}
@@ -439,7 +500,7 @@ function BookingFormContent() {
                     </span>
                   </div>
 
-                  {/* Date of Birth */}
+                  {/* Date of Birth (Min: 120 yrs ago, Max: Today) */}
                   <div className="flex flex-col gap-2">
                     <label htmlFor={dobId} className={labelClasses}>
                       <span>Date of Birth <span className="text-rose-500">*</span></span>
@@ -449,6 +510,8 @@ function BookingFormContent() {
                       name="dob"
                       type="date"
                       required
+                      min={minDobStr}
+                      max={todayStr}
                       value={formData.dob}
                       onChange={(e) => handleInputChange("dob", e.target.value)}
                       className={getFieldClass(!!errors.dob)}
@@ -506,6 +569,7 @@ function BookingFormContent() {
                       id={serviceId}
                       name="service"
                       required
+                      variant="light"
                       options={serviceOptions}
                       value={formData.service}
                       onChange={(val) => handleInputChange("service", val)}

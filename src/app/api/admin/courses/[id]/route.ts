@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { updateCourseSchema } from "@/lib/validations/admin";
+import { updateCourseSchema, resourceIdSchema } from "@/lib/validations/schemas";
+import { parseAndValidateJson, validateInput } from "@/lib/validations/validator";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * GET /api/admin/courses/[id] — Get single course by id
@@ -17,9 +19,13 @@ export async function GET(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const course = await prisma.course.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!course) {
@@ -28,11 +34,7 @@ export async function GET(
 
     return NextResponse.json(course);
   } catch (error) {
-    console.error("GET /api/admin/courses/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch course" },
-      { status: 500 }
-    );
+    return handleServerError(error, "GET /api/admin/courses/[id]", "Failed to fetch course.");
   }
 }
 
@@ -50,26 +52,22 @@ export async function PATCH(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingCourse = await prisma.course.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingCourse) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    let json: unknown;
-    try {
-      json = await request.json();
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const validation = updateCourseSchema.safeParse(json);
+    const validation = await parseAndValidateJson(request, updateCourseSchema);
     if (!validation.success) {
-      const firstError = validation.error.issues[0]?.message || "Validation failed";
-      return NextResponse.json({ error: firstError }, { status: 400 });
+      return validation.response;
     }
 
     const data = validation.data;
@@ -89,7 +87,7 @@ export async function PATCH(
     }
 
     const updated = await prisma.course.update({
-      where: { id },
+      where: { id: idValidation.data },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.title !== undefined && { title: data.title }),
@@ -105,11 +103,7 @@ export async function PATCH(
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error("PATCH /api/admin/courses/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to update course" },
-      { status: 500 }
-    );
+    return handleServerError(error, "PATCH /api/admin/courses/[id]", "Failed to update course.");
   }
 }
 
@@ -127,9 +121,13 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const idValidation = validateInput(resourceIdSchema, id);
+    if (!idValidation.success) {
+      return idValidation.response;
+    }
 
     const existingCourse = await prisma.course.findUnique({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
     if (!existingCourse) {
@@ -137,15 +135,14 @@ export async function DELETE(
     }
 
     await prisma.course.delete({
-      where: { id },
+      where: { id: idValidation.data },
     });
 
-    return NextResponse.json({ success: true, message: `Course "${existingCourse.title}" deleted successfully` });
+    return NextResponse.json({
+      success: true,
+      message: `Course "${existingCourse.title}" deleted successfully`,
+    });
   } catch (error) {
-    console.error("DELETE /api/admin/courses/[id] error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete course" },
-      { status: 500 }
-    );
+    return handleServerError(error, "DELETE /api/admin/courses/[id]", "Failed to delete course.");
   }
 }

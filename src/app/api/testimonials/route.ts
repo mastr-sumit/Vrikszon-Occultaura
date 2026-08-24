@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { handleServerError } from "@/lib/errors";
 
 /**
  * GET /api/testimonials — Public endpoint to fetch all enabled testimonials
@@ -13,10 +14,10 @@ export async function GET() {
 
     return NextResponse.json(testimonials);
   } catch (error) {
-    console.error("GET /api/testimonials error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch testimonials" },
-      { status: 500 }
+    return handleServerError(
+      error,
+      "GET /api/testimonials",
+      "Unable to fetch testimonials at this time."
     );
   }
 }

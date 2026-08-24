@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { auth } from "@/auth";
 
 export async function GET() {
-  const root = process.cwd();
-  const targetDir = path.join(root, "public", "images", "products");
-  // Remove WhatsApp files in products
-  const files = fs.readdirSync(targetDir);
-  let removedCount = 0;
-  for (const file of files) {
-    if (file.startsWith("WhatsApp Image")) {
-      fs.unlinkSync(path.join(targetDir, file));
-      removedCount++;
-    }
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Endpoint not available in production." }, { status: 403 });
   }
 
-  return NextResponse.json({ success: true, removedCount });
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return NextResponse.json({ success: true, message: "Migration utility completed." });
 }
