@@ -15,8 +15,7 @@ export async function GET() {
 
   try {
     const rawUrl = process.env.DATABASE_URL || "";
-    const sanitizedUrl = rawUrl ? rawUrl.replace(/:[^:@]+@/, ":***@") : "EMPTY";
-    diagnostics.dbUrlPreview = sanitizedUrl;
+    diagnostics.rawDbUrlPreview = rawUrl ? rawUrl.replace(/:[^:@]+@/, ":***@") : "EMPTY";
 
     const email = "admin@vrikszon.com";
     const testPassword = "Vrikszon@Auth2026!";
