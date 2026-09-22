@@ -62,15 +62,15 @@ const FAQPreview = () => {
     >
       <Container size="default">
         <div className="mx-auto max-w-3xl text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span className="text-small font-semibold uppercase tracking-[0.15em] text-gold-600">
-              Clarity & Transparency
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-600">
+              Frequently Asked Questions
             </span>
-            <span className="h-px w-8 bg-gold-500/60" />
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-navy-950 tracking-tight">
+          <h2 className="font-heading text-h2 sm:text-h1 md:text-hero lg:text-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-semibold text-navy-950 tracking-tight leading-[1.15]">
             Frequently Asked <span className="text-gold-600 italic">Questions</span>
           </h2>
 
@@ -163,7 +163,7 @@ const FAQPreview = () => {
           </p>
 
           <a
-            href="https://wa.me/919999999999?text=Hello%20Vrikszon%20Occultaura,%20I%20have%20a%20question%20regarding%20consultations."
+            href="https://wa.me/919073190525?text=Hello%20Vrikszon%20Occultaura,%20I%20have%20a%20question%20regarding%20consultations."
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-all shadow-xs"

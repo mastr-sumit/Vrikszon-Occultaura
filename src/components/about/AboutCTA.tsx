@@ -135,23 +135,20 @@ const AboutCTA = () => {
 
       <Container size="narrow" className="relative z-10">
         <div className="mx-auto flex max-w-[760px] flex-col items-center gap-6 text-center">
-          <motion.span
-            {...fadeUp(0)}
-            className="text-small font-semibold uppercase tracking-[0.08em] text-gold-500"
-          >
-            {eyebrow}
-          </motion.span>
-
-          {/* Subtle divider */}
           <motion.div
-            {...fadeUp(0.06)}
-            aria-hidden="true"
-            className="h-px w-12 bg-[linear-gradient(90deg,transparent_0%,var(--color-gold-500)_50%,transparent_100%)]"
-          />
+            {...fadeUp(0)}
+            className="flex items-center gap-2.5"
+          >
+            <span className="h-0.5 w-8 bg-gold-400/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-400">
+              {eyebrow}
+            </span>
+            <span className="h-0.5 w-8 bg-gold-400/80" />
+          </motion.div>
 
           <motion.h2
             {...fadeUp(0.12)}
-            className="text-balance font-heading text-h3 font-medium text-white md:text-h2"
+            className="text-balance font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-white tracking-tight leading-[1.18]"
           >
             {heading}
           </motion.h2>

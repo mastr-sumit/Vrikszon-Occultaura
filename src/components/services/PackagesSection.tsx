@@ -50,15 +50,15 @@ const PackagesSection = () => {
           {...fadeUp(0)}
           className="mx-auto flex max-w-3xl flex-col items-center gap-3 text-center mb-12"
         >
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span className="text-small font-semibold uppercase tracking-[0.15em] text-gold-400">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-400">
               All-Inclusive Master Report
             </span>
-            <span className="h-px w-8 bg-gold-500/60" />
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-white tracking-tight">
+          <h2 className="font-heading text-h2 sm:text-h1 md:text-hero lg:text-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-semibold text-white tracking-tight leading-[1.15]">
             One Comprehensive Report. <span className="text-gold-400 italic">Complete Solutions.</span>
           </h2>
           <p className="text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
@@ -155,7 +155,7 @@ const PackagesSection = () => {
                   </Button>
 
                   <a
-                    href="https://wa.me/919999999999?text=Hello%20Vrikszon%20Occultaura,%20I%20am%20interested%20in%20the%20Master%20Consultation%20Package."
+                    href="https://wa.me/919073190525?text=Hello%20Vrikszon%20Occultaura,%20I%20am%20interested%20in%20the%20Master%20Consultation%20Package."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-[12px] h-[52px] px-6 text-xs font-semibold text-emerald-300 border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/50 transition-all"

@@ -67,15 +67,15 @@ export default function ServicesProcess() {
     >
       <Container size="wide">
         <div className="mx-auto max-w-3xl text-center mb-14">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span className="text-small font-semibold uppercase tracking-[0.15em] text-gold-600">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-600">
               The Sacred Journey
             </span>
-            <span className="h-px w-8 bg-gold-500/60" />
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-navy-950 tracking-tight">
+          <h2 className="font-heading text-h2 sm:text-h1 md:text-hero lg:text-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-semibold text-navy-950 tracking-tight leading-[1.15]">
             How Our <span className="text-gold-600 italic">Consultation Works</span>
           </h2>
 

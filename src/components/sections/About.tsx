@@ -148,16 +148,20 @@ const About = () => {
 
           {/* Right — eyebrow, heading, practice description, highlights, CTA */}
           <div className="flex flex-col items-start gap-8 text-left">
-            <motion.span
+            <motion.div
               {...fadeUp(0.15)}
-              className="text-small font-semibold uppercase tracking-[0.08em] text-gold-600"
+              className="flex items-center gap-2.5"
             >
-              About Us
-            </motion.span>
+              <span className="h-0.5 w-8 bg-gold-500/80" />
+              <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-600">
+                About Us
+              </span>
+              <span className="h-0.5 w-8 bg-gold-500/80" />
+            </motion.div>
 
             <motion.h2
               {...fadeUp(0.25)}
-              className="max-w-[18ch] text-balance font-display text-h3 font-medium leading-[1.15] text-navy-900 md:text-h2"
+              className="max-w-[22ch] text-balance font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-navy-950 tracking-tight leading-[1.18]"
             >
               Empowering Lives Through Numerology, Vastu &amp; Occult Wisdom
             </motion.h2>

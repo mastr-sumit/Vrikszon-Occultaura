@@ -256,7 +256,7 @@ export const ServiceCard = ({
             </Link>
 
             <a
-              href={`https://wa.me/919999999999?text=${encodeURIComponent(
+              href={`https://wa.me/919073190525?text=${encodeURIComponent(
                 `Hello Vrikszon Occultaura, I would like to inquire about ${service.name}.`
               )}`}
               target="_blank"

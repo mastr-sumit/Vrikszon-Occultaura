@@ -24,6 +24,10 @@ const TAB_TITLES: Record<AdminTab, { title: string; subtitle: string }> = {
     title: "System Overview",
     subtitle: "Real-time snapshot of Vrikszon Occultaura catalogue, bookings, and store data.",
   },
+  services: {
+    title: "Services & Consultations",
+    subtitle: "Manage occult consultations, name analysis, numerology, astrology, and remedial services.",
+  },
   products: {
     title: "Products Catalogue",
     subtitle: "Manage spiritual gemstone bracelets, rudraksha malas, pyramids, and sacred items.",
@@ -31,6 +35,10 @@ const TAB_TITLES: Record<AdminTab, { title: string; subtitle: string }> = {
   courses: {
     title: "Academy & Courses",
     subtitle: "Manage professional certification courses in Numerology, Vastu, and Occult Sciences.",
+  },
+  categories: {
+    title: "Category Management",
+    subtitle: "Organize products and courses with custom, dynamic categories.",
   },
   testimonials: {
     title: "Client Testimonials",

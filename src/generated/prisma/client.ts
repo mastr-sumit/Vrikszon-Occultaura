@@ -52,6 +52,16 @@ export type Booking = Prisma.BookingModel
  */
 export type ContactMessage = Prisma.ContactMessageModel
 /**
+ * Model Category
+ * 
+ */
+export type Category = Prisma.CategoryModel
+/**
+ * Model Service
+ * 
+ */
+export type Service = Prisma.ServiceModel
+/**
  * Model Product
  * 
  */
@@ -71,6 +81,11 @@ export type Order = Prisma.OrderModel
  * 
  */
 export type OrderItem = Prisma.OrderItemModel
+/**
+ * Model Payment
+ * 
+ */
+export type Payment = Prisma.PaymentModel
 /**
  * Model Testimonial
  * 

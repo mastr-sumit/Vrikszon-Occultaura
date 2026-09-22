@@ -12,13 +12,16 @@ import {
   ExternalLink,
   ShieldCheck,
   Sparkles,
+  Tags,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type AdminTab =
   | "overview"
+  | "services"
   | "products"
   | "courses"
+  | "categories"
   | "testimonials"
   | "bookings"
   | "orders"
@@ -28,12 +31,14 @@ interface AdminSidebarProps {
   currentTab: AdminTab;
   onTabChange: (tab: AdminTab) => void;
   counts: {
+    services?: number;
     products: number;
     courses: number;
     testimonials: number;
     bookings: number;
     orders: number;
     messages: number;
+    categories?: number;
   };
   adminUser: {
     name: string;
@@ -54,8 +59,10 @@ export function AdminSidebar({
     badge?: number;
   }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "services", label: "Services", icon: Sparkles, badge: counts.services },
     { id: "products", label: "Products", icon: Package, badge: counts.products },
     { id: "courses", label: "Courses", icon: GraduationCap, badge: counts.courses },
+    { id: "categories", label: "Categories", icon: Tags, badge: counts.categories },
     { id: "testimonials", label: "Testimonials", icon: Video, badge: counts.testimonials },
     { id: "bookings", label: "Bookings", icon: CalendarCheck, badge: counts.bookings },
     { id: "orders", label: "Orders", icon: ShoppingBag, badge: counts.orders },

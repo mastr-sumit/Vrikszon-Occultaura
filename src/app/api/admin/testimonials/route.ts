@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createTestimonialSchema } from "@/lib/validations/schemas";
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
 
     const data = validation.data;
 
+    const t0 = Date.now();
     const testimonial = await prisma.testimonial.create({
       data: {
         clientName: data.clientName,
@@ -53,6 +55,11 @@ export async function POST(request: Request) {
         enabled: data.enabled ?? true,
       },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Testimonial Create (${testimonial.clientName}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json(testimonial, { status: 201 });
   } catch (error) {

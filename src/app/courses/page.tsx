@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { coursesPageSections } from "@/data/coursesPageSections";
+import { getPublicCourses, getPublicCourseCategories } from "@/lib/db-public";
+import CoursesGrid from "@/components/courses/CoursesGrid";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
   title: "Courses | Vrikszon Occultaura",
@@ -10,18 +16,32 @@ export const metadata: Metadata = {
 /**
  * Courses Page
  *
- * Renders the configured, enabled Courses page sections in order — see
- * src/data/coursesPageSections.ts to enable/disable, reorder, or add a section.
- * Follows the same config-driven architecture as /shop, /about, /contact, and /services.
+ * Server Component with live DB data fetching — guarantees immediate
+ * reflection of Admin Panel updates for Courses.
  */
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const [courses, categories] = await Promise.all([
+    getPublicCourses(),
+    getPublicCourseCategories(),
+  ]);
+
   return (
     <main>
       {coursesPageSections
         .filter((section) => section.enabled)
-        .map(({ id, component: Section }) => (
-          <Section key={id} />
-        ))}
+        .map(({ id, component: Section }) => {
+          if (id === "courses-grid") {
+            return (
+              <CoursesGrid
+                key={id}
+                initialCourses={courses}
+                initialCategories={categories}
+              />
+            );
+          }
+          return <Section key={id} />;
+        })}
     </main>
   );
 }
+

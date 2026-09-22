@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2, Phone, Mail, MapPin, Sparkles, Home } from "lucide-react";
+import { CheckCircle2, Phone, Mail, MapPin, Sparkles, Loader2 } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { formatProductPrice } from "@/data/products";
 import type { CartItem } from "@/context/CartContext";
@@ -13,6 +13,7 @@ interface OrderConfirmationProps {
   shippingDetails: ShippingFormData;
   items: CartItem[];
   totalPrice: number;
+  isLoading?: boolean;
 }
 
 /**
@@ -21,18 +22,16 @@ interface OrderConfirmationProps {
  * Full-page confirmation state rendered after a user successfully submits their order.
  * Replaces the checkout form shell, confirms order details, and clearly explains
  * "what happens next?" using established contact channels.
- *
- * Per ui-ux-pro-max guidelines for post-conversion assurance:
- * - High visual clarity & trustworthy structure.
- * - Clear contact channel expectations (Phone/WhatsApp + Email).
- * - Complete order recap (shipping info + purchased items list).
  */
 export default function OrderConfirmation({
   orderId,
   shippingDetails,
   items,
   totalPrice,
+  isLoading = false,
 }: OrderConfirmationProps) {
+  const hasShippingDetails = Boolean(shippingDetails?.fullName?.trim());
+
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8 py-4">
       {/* Banner / Success Badge */}
@@ -52,7 +51,7 @@ export default function OrderConfirmation({
         </h1>
 
         <p className="mt-3 w-full max-w-xl mx-auto text-center text-body-lg text-navy-800 leading-relaxed font-normal">
-          Thank you, <strong className="font-semibold text-navy-950">{shippingDetails.fullName}</strong>. We have received your order details. Our team will contact you shortly to confirm payment and delivery.
+          Thank you{hasShippingDetails ? <>, <strong className="font-semibold text-navy-950">{shippingDetails.fullName}</strong></> : ""}. Your sacred order has been confirmed and logged in our system. Our team will contact you shortly regarding delivery.
         </p>
       </div>
 
@@ -85,7 +84,7 @@ export default function OrderConfirmation({
               Personal Confirmation
             </h3>
             <p className="text-body-sm text-navy-800/80 leading-relaxed">
-              Our practitioner team will call/WhatsApp you at <strong>{shippingDetails.phone}</strong> to confirm energisation &amp; payment.
+              Our practitioner team will call/WhatsApp you{shippingDetails?.phone ? <> at <strong>{shippingDetails.phone}</strong></> : ""} to confirm energisation &amp; dispatch.
             </p>
           </div>
 
@@ -98,7 +97,7 @@ export default function OrderConfirmation({
               Blessed &amp; Dispatched
             </h3>
             <p className="text-body-sm text-navy-800/80 leading-relaxed">
-              Once confirmed, your sacred items are energised and shipped directly to {shippingDetails.city}.
+              Once confirmed, your sacred items are energised and shipped directly to {shippingDetails?.city || "your address"}.
             </p>
           </div>
         </div>
@@ -116,6 +115,14 @@ export default function OrderConfirmation({
         </div>
       </div>
 
+      {/* Loading Skeleton Indicator */}
+      {isLoading && (
+        <div className="flex items-center justify-center gap-3 rounded-2xl border border-navy-900/10 bg-white p-6 shadow-xs text-navy-800 text-sm font-medium">
+          <Loader2 className="h-5 w-5 animate-spin text-gold-600" />
+          <span>Retrieving verified order summary from database...</span>
+        </div>
+      )}
+
       {/* Order Details & Shipping Address Recap */}
       <div className="grid grid-cols-1 gap-8 md:grid-cols-12 items-start">
         {/* Shipping Address Recap */}
@@ -130,30 +137,32 @@ export default function OrderConfirmation({
               <span className="text-caption font-semibold uppercase tracking-wider text-navy-900/50 block mb-1">
                 Recipient
               </span>
-              <p className="font-medium text-navy-950">{shippingDetails.fullName}</p>
+              <p className="font-medium text-navy-950">{shippingDetails?.fullName || "—"}</p>
             </div>
 
             <div>
               <span className="text-caption font-semibold uppercase tracking-wider text-navy-900/50 block mb-1">
                 Address
               </span>
-              <p className="leading-relaxed">{shippingDetails.addressLine1}</p>
-              {shippingDetails.addressLine2 && <p className="leading-relaxed">{shippingDetails.addressLine2}</p>}
-              <p className="leading-relaxed">{shippingDetails.city}, {shippingDetails.state} - {shippingDetails.pincode}</p>
+              <p className="leading-relaxed">{shippingDetails?.addressLine1 || "—"}</p>
+              {shippingDetails?.addressLine2 && <p className="leading-relaxed">{shippingDetails.addressLine2}</p>}
+              {shippingDetails?.city && (
+                <p className="leading-relaxed">{shippingDetails.city}, {shippingDetails.state} - {shippingDetails.pincode}</p>
+              )}
             </div>
 
             <div>
               <span className="text-caption font-semibold uppercase tracking-wider text-navy-900/50 block mb-1">
                 Phone
               </span>
-              <p className="font-medium text-navy-950">{shippingDetails.phone}</p>
+              <p className="font-medium text-navy-950">{shippingDetails?.phone || "—"}</p>
             </div>
 
             <div>
               <span className="text-caption font-semibold uppercase tracking-wider text-navy-900/50 block mb-1">
                 Email
               </span>
-              <p className="font-medium text-navy-950">{shippingDetails.email}</p>
+              <p className="font-medium text-navy-950">{shippingDetails?.email || "—"}</p>
             </div>
           </div>
         </div>
@@ -164,41 +173,48 @@ export default function OrderConfirmation({
             Items Ordered ({items.length})
           </h2>
 
-          <ul className="divide-y divide-navy-900/10 max-h-72 overflow-y-auto pr-2" role="list">
-            {items.map(({ product, quantity }) => {
-              const imageSrc = product.image || `/images/products/${product.slug}.jpg`;
-              const lineTotal = (product.price ?? 0) * quantity;
+          {items.length === 0 && isLoading ? (
+            <div className="py-8 flex flex-col items-center justify-center text-center text-navy-600 text-xs">
+              <Loader2 className="h-6 w-6 animate-spin text-gold-600 mb-2" />
+              <span>Loading purchased items...</span>
+            </div>
+          ) : (
+            <ul className="divide-y divide-navy-900/10 max-h-72 overflow-y-auto pr-2" role="list">
+              {items.map(({ product, quantity }) => {
+                const imageSrc = product.image || (product.slug ? `/images/products/${product.slug}.jpg` : "/images/placeholder-product.jpg");
+                const lineTotal = (product.price ?? 0) * quantity;
 
-              return (
-                <li key={product.id} className="flex items-center gap-4 py-3">
-                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-navy-900/10 bg-navy-50">
-                    <Image
-                      src={imageSrc}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = "none";
-                      }}
-                    />
-                  </div>
+                return (
+                  <li key={product.id || product.slug} className="flex items-center gap-4 py-3">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-navy-900/10 bg-navy-50">
+                      <Image
+                        src={imageSrc}
+                        alt={product.name}
+                        fill
+                        className="object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    </div>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-heading text-body-sm font-medium text-navy-950 truncate">
-                      {product.name}
-                    </h3>
-                    <p className="text-caption text-navy-900/60">
-                      Qty: {quantity} × {formatProductPrice(product.price)}
-                    </p>
-                  </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-heading text-body-sm font-medium text-navy-950 truncate">
+                        {product.name}
+                      </h3>
+                      <p className="text-caption text-navy-900/60">
+                        Qty: {quantity} × {formatProductPrice(product.price)}
+                      </p>
+                    </div>
 
-                  <span className="font-heading text-body-sm font-semibold text-navy-950">
-                    {formatProductPrice(lineTotal)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
+                    <span className="font-heading text-body-sm font-semibold text-navy-950">
+                      {formatProductPrice(lineTotal)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
           <div className="mt-4 border-t border-navy-900/10 pt-3 flex items-center justify-between">
             <span className="font-heading text-body font-semibold text-navy-950">
@@ -218,9 +234,8 @@ export default function OrderConfirmation({
         </Button>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-base border border-navy-900/15 bg-white px-6 py-3 text-body-sm font-medium text-navy-900 hover:bg-navy-50 transition-colors"
+          className="inline-flex items-center justify-center rounded-xl border border-navy-900/15 bg-white px-6 py-3.5 text-body-sm font-semibold text-navy-900 hover:bg-navy-50 transition-colors shadow-xs"
         >
-          <Home className="h-4 w-4 text-navy-600" />
           Return to Home
         </Link>
       </div>

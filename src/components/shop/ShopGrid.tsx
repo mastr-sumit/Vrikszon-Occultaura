@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { MessageCircle, CalendarCheck, Sparkles, Search, X } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -9,24 +9,52 @@ import Button from "@/components/ui/Button";
 import { PRODUCTS, type Product } from "@/data/products";
 import { ShopCard } from "./ShopCard";
 
+interface ShopGridProps {
+  initialProducts?: Product[];
+}
+
 /**
  * ShopGrid
  *
- * Renders all enabled products from products.ts grouped by category, with
+ * Renders all enabled products from database (with static fallback) grouped by category, with
  * a live search bar for instant category & name discovery.
- * Categories are ordered by their first appearance in products.ts.
+ * Categories are ordered by their first appearance.
  *
  * For each category group, a responsive grid (4 cols desktop, 2 tablet, 1 mobile)
  * is rendered with an independent scroll-triggered staggered reveal.
  * Hides any category group that ends up with zero matching products after filtering.
  */
-const ShopGrid = () => {
+const ShopGrid = ({ initialProducts }: ShopGridProps) => {
   const shouldReduceMotion = useReducedMotion();
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [productsList, setProductsList] = useState<Product[]>(
+    initialProducts && initialProducts.length > 0 ? initialProducts : PRODUCTS
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProducts() {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data)) {
+            setProductsList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load products in shop:", err);
+      }
+    }
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const enabledProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => p.enabled);
-  }, []);
+    return productsList.filter((p) => p.enabled);
+  }, [productsList]);
 
   const filteredProducts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

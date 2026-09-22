@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { Product } from "@/data/products";
 
 export interface CartItem {
@@ -28,7 +28,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = (product: Product) => {
+  const addToCart = useCallback((product: Product) => {
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex((item) => item.product.id === product.id);
       if (existingIndex > -1) {
@@ -41,15 +41,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prevItems, { product, quantity: 1 }];
     });
-  };
+  }, []);
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = useCallback((productId: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
-  };
+  }, []);
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = useCallback((productId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
       return;
     }
     setItems((prevItems) =>
@@ -57,41 +57,53 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         item.product.id === productId ? { ...item, quantity } : item
       )
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-  };
+  }, []);
 
-  const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
+  const totalItems = useMemo(() => items.reduce((acc, item) => acc + item.quantity, 0), [items]);
 
-  const totalPrice = items.reduce((acc, item) => {
-    const itemPrice = item.product.price ?? 0;
-    return acc + itemPrice * item.quantity;
-  }, 0);
+  const totalPrice = useMemo(() => {
+    return items.reduce((acc, item) => {
+      const itemPrice = item.product.price ?? 0;
+      return acc + itemPrice * item.quantity;
+    }, 0);
+  }, [items]);
 
-  const openCart = () => setIsOpen(true);
-  const closeCart = () => setIsOpen(false);
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
 
-  return (
-    <CartContext.Provider
-      value={{
-        items,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        totalItems,
-        totalPrice,
-        isOpen,
-        setIsOpen,
-        openCart,
-        closeCart,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
+  const contextValue = useMemo(
+    () => ({
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      totalItems,
+      totalPrice,
+      isOpen,
+      setIsOpen,
+      openCart,
+      closeCart,
+    }),
+    [
+      items,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      totalItems,
+      totalPrice,
+      isOpen,
+      openCart,
+      closeCart,
+    ]
   );
+
+  return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;
 };
 
 export const useCart = () => {

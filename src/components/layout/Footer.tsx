@@ -3,13 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import {
-  Users,
-  Camera,
-  Video,
-  Briefcase,
-  MessageCircle,
-} from "lucide-react";
 import Container from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
 import { CONTACT_ITEMS } from "@/data/contactDetails";
@@ -35,17 +28,6 @@ const FOOTER_SERVICES = [
   { label: "Business Guidance", href: "/services" },
   { label: "Mobile Numerology", href: "/services" },
   { label: "Book Consultation", href: "/book-consultation" },
-];
-
-/**
- * Social links.
- */
-const SOCIAL_LINKS = [
-  { icon: Users, label: "Facebook", href: "#" },
-  { icon: Camera, label: "Instagram", href: "#" },
-  { icon: Video, label: "YouTube", href: "#" },
-  { icon: Briefcase, label: "LinkedIn", href: "#" },
-  { icon: MessageCircle, label: "WhatsApp", href: "https://wa.me/919073190525" },
 ];
 
 const LEGAL_LINKS = [
@@ -133,7 +115,7 @@ const Footer = () => {
             className="flex flex-col gap-16"
           >
             <div className="grid grid-cols-1 gap-12 text-center md:grid-cols-2 md:gap-10 md:text-left lg:grid-cols-4 lg:gap-8">
-              {/* Column 1 — logo, brand line, social */}
+              {/* Column 1 — logo & brand line */}
               <motion.div
                 variants={itemVariants}
                 className="flex flex-col items-center gap-6 md:items-start"
@@ -159,27 +141,6 @@ const Footer = () => {
                   Personalized Numerology and Vastu guidance to help you move
                   through life with clarity, confidence and harmony.
                 </p>
-
-                <ul className="flex items-center justify-center gap-4 md:justify-start">
-                  {SOCIAL_LINKS.map(({ icon: Icon, label, href }) => (
-                    <li key={label}>
-                      <Link
-                        href={href}
-                        aria-label={label}
-                        className={cn(
-                          "flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white/70",
-                          "transition-[transform,color,background-color] duration-[200ms] ease-out",
-                          "hover:border-white/10 hover:bg-white/5 hover:text-gold-500",
-                          "motion-safe:hover:-translate-y-1",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500",
-                          "focus-visible:ring-offset-2 focus-visible:ring-offset-navy-900"
-                        )}
-                      >
-                        <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </motion.div>
 
               {/* Column 2 — Quick Links */}

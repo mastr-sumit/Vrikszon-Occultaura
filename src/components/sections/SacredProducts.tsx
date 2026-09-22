@@ -55,16 +55,20 @@ const SacredProducts = () => {
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           {/* Left — philosophy copy, feature points, CTA */}
           <div className="flex flex-col items-start gap-6 text-left">
-            <motion.span
+            <motion.div
               {...fadeUp(0)}
-              className="text-small font-semibold uppercase tracking-[0.08em] text-gold-500"
+              className="flex items-center gap-2.5"
             >
-              Sacred Collection
-            </motion.span>
+              <span className="h-0.5 w-8 bg-gold-400/80" />
+              <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-400">
+                Sacred Collection
+              </span>
+              <span className="h-0.5 w-8 bg-gold-400/80" />
+            </motion.div>
 
             <motion.h2
               {...fadeUp(0.1)}
-              className="font-display text-h3 font-medium text-white md:text-h2"
+              className="font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-white tracking-tight leading-[1.18]"
             >
               Thoughtfully Chosen for Balance, Energy &amp; Intention
             </motion.h2>

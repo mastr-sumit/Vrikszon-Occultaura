@@ -64,12 +64,16 @@ export function SectionHeading({
       )}
     >
       {resolvedEyebrow && (
-        <span className="text-small font-semibold uppercase tracking-[0.08em] text-gold-600">
-          {resolvedEyebrow}
-        </span>
+        <div className={cn("flex items-center gap-2.5", resolvedAlign === "center" && "justify-center")}>
+          <span className="h-px w-8 bg-gold-500/60" />
+          <span className="text-sm sm:text-base font-bold uppercase tracking-[0.18em] text-gold-600">
+            {resolvedEyebrow}
+          </span>
+          <span className="h-px w-8 bg-gold-500/60" />
+        </div>
       )}
       {resolvedHeading && (
-        <HeadingTag className="font-heading text-h2 font-medium text-navy-900">
+        <HeadingTag className="font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-navy-900 tracking-tight leading-[1.18]">
           {resolvedHeading}
         </HeadingTag>
       )}

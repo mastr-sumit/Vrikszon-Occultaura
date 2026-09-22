@@ -114,19 +114,20 @@ const WhyChooseUs = () => {
 
       <Container size="wide" className="relative z-10">
         <div className="mx-auto max-w-3xl text-center mb-14">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span className="text-small font-semibold uppercase tracking-[0.15em] text-gold-600">
+          {/* Prominently Highlighted WHY CHOOSE US Text */}
+          <div className="flex items-center justify-center gap-3 sm:gap-4 md:gap-5 mb-3">
+            <span className="h-[2px] w-8 sm:w-14 md:w-20 bg-gradient-to-r from-transparent to-gold-500 rounded-full" />
+            <span className="font-heading text-2xl sm:text-3xl md:text-4xl lg:text-[38px] font-bold uppercase tracking-[0.15em] text-gold-600">
               Why Choose Us
             </span>
-            <span className="h-px w-8 bg-gold-500/60" />
+            <span className="h-[2px] w-8 sm:w-14 md:w-20 bg-gradient-to-l from-transparent to-gold-500 rounded-full" />
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-navy-950 tracking-tight">
+          <h2 className="font-heading text-[26px] sm:text-[36px] md:text-[46px] lg:text-[52px] font-semibold text-navy-950 tracking-tight leading-[1.18]">
             A Practice Built on <span className="text-gold-600 italic">Trust & Clarity</span>
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
             Six sacred pillars that make Vrikszon Occultaura the trusted choice for authentic Numerology,
             Vastu alignment, and transformative life guidance.
           </p>

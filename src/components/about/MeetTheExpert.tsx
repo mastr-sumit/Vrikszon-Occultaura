@@ -123,17 +123,21 @@ const MeetTheExpert = () => {
           {/* ================= RIGHT (7 cols) — content ================= */}
           <div className="flex flex-col gap-8 lg:col-span-7">
             <div className="flex flex-col gap-5 text-left">
-              <motion.span
+              <motion.div
                 {...fadeUp(0)}
-                className="text-small font-semibold uppercase tracking-[0.08em] text-gold-600"
+                className="flex items-center gap-2.5"
               >
-                Our Expert
-              </motion.span>
+                <span className="h-0.5 w-8 bg-gold-500/80" />
+                <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-600">
+                  Our Expert
+                </span>
+                <span className="h-0.5 w-8 bg-gold-500/80" />
+              </motion.div>
 
               <div className="flex flex-col gap-2">
                 <motion.h2
                   {...fadeUp(0.08)}
-                  className="text-balance font-display font-serif text-h3 font-medium text-navy-900 md:text-h2"
+                  className="text-balance font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-navy-950 tracking-tight leading-[1.18]"
                 >
                   Meet Hayaett S Rahman
                 </motion.h2>

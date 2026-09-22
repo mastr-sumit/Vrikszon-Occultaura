@@ -33,8 +33,9 @@ export const loginSchema = z
     csrfToken: z.string().max(256).optional(),
     callbackUrl: z.string().max(2048).optional(),
     redirect: z.union([z.boolean(), z.string()]).optional(),
+    json: z.union([z.boolean(), z.string()]).optional(),
   })
-  .strict();
+  .passthrough();
 
 /**
  * ─────────────────────────────────────────────────────────────
@@ -195,7 +196,7 @@ export const createBookingSchema = z
   })
   .strict();
 
-export const updateBookingStatusSchema = z
+export const updateBookingSchema = z
   .object({
     id: z
       .string()
@@ -203,9 +204,12 @@ export const updateBookingStatusSchema = z
       .min(1, "Booking ID cannot be empty")
       .max(100, "Booking ID too long")
       .regex(ID_REGEX, "Invalid booking ID format"),
-    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]),
+    status: z.enum(["PENDING", "CONFIRMED", "COMPLETED", "CANCELLED"]).optional(),
+    archived: z.boolean().optional(),
   })
   .strict();
+
+export const updateBookingStatusSchema = updateBookingSchema;
 
 /**
  * ─────────────────────────────────────────────────────────────
@@ -278,7 +282,8 @@ export const updateMessageSchema = z
       .min(1, "Message ID cannot be empty")
       .max(100, "Message ID too long")
       .regex(ID_REGEX, "Invalid message ID format"),
-    isRead: z.boolean(),
+    isRead: z.boolean().optional(),
+    archived: z.boolean().optional(),
   })
   .strict();
 
@@ -343,6 +348,7 @@ export const createProductSchema = z
       .default("sparkles"),
     featured: z.boolean().default(false),
     enabled: z.boolean().default(true),
+    archived: z.boolean().default(false),
     href: z
       .string()
       .trim()
@@ -497,7 +503,6 @@ export const resourceIdSchema = z
   .regex(ID_REGEX, "Resource ID contains invalid characters");
 
 // Aliases for route handlers
-export const updateBookingSchema = updateBookingStatusSchema;
 export const updateContactMessageSchema = updateMessageSchema;
 export const updateOrderSchema = updateOrderStatusSchema;
 

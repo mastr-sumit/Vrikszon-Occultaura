@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createProductSchema } from "@/lib/validations/schemas";
@@ -98,11 +99,24 @@ export async function POST(request: Request) {
         : JSON.stringify([data.benefits])
       : null;
 
+    // Link or auto-create Category record
+    let categoryId: string | null = null;
+    if (data.category) {
+      const cat = await prisma.category.findFirst({
+        where: { name: { equals: data.category.trim(), mode: "insensitive" }, type: "PRODUCT" },
+      });
+      if (cat) {
+        categoryId = cat.id;
+      }
+    }
+
+    const t0 = Date.now();
     const product = await prisma.product.create({
       data: {
         slug: data.slug,
         name: data.name,
         category: data.category,
+        categoryId,
         shortDescription: data.shortDescription,
         subtitle: data.subtitle ?? null,
         benefits: benefitsString,
@@ -115,6 +129,12 @@ export async function POST(request: Request) {
         variantsNote: data.variantsNote ?? null,
       },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/shop");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Product Create (${product.name}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json(formatProduct(product), { status: 201 });
   } catch (error) {

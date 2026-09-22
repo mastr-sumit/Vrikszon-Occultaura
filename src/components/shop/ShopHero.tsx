@@ -83,20 +83,24 @@ const ShopHero = () => {
           </motion.nav>
 
           {/* Eyebrow badge */}
-          <motion.span
+          <motion.div
             {...fadeUp(0.1, 0.7)}
-            className="text-small font-semibold uppercase tracking-[0.08em] text-gold-500"
+            className="flex items-center gap-2.5"
           >
-            Sacred Catalogue & Spiritual Tools
-          </motion.span>
+            <span className="h-0.5 w-8 bg-gold-400/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-400">
+              Sacred Catalogue & Spiritual Tools
+            </span>
+            <span className="h-0.5 w-8 bg-gold-400/80" />
+          </motion.div>
 
           {/* Main Headline */}
           <motion.h1
             {...fadeUp(0.2, 0.9)}
-            className="text-balance font-display text-h2 font-medium text-white md:text-h1"
+            className="text-balance font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-white tracking-tight leading-[1.18]"
           >
             Harmonize Your Energy with{" "}
-            <span className="text-gold-500">Sacred Tools</span>
+            <span className="text-gold-400 italic">Sacred Tools</span>
           </motion.h1>
 
           {/* Supporting paragraph */}

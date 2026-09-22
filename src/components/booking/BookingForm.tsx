@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, useEffect, Suspense } from "react";
+import { useId, useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Clock, MapPin, CheckCircle2, FileText, Check, Calendar, MapPin as LocationIcon, Sparkles } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
@@ -89,11 +89,53 @@ function BookingFormContent() {
   const serviceId = useId();
   const dateId = useId();
   const messageId = useId();
+  const [servicesList, setServicesList] = useState(SERVICES);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadServices() {
+      try {
+        const res = await fetch("/api/services", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data) && data.length > 0) {
+            setServicesList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load services in booking dropdown:", err);
+      }
+    }
+    loadServices();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const hasProcessedRedirectRef = useRef(false);
+
+  // Handle Netbanking / Gateway direct redirect return (Guarded to run EXACTLY once)
+  useEffect(() => {
+    if (typeof window === "undefined" || hasProcessedRedirectRef.current) return;
+
+    const url = new URL(window.location.href);
+    const statusParam = url.searchParams.get("status");
+    const errorParam = url.searchParams.get("error");
+
+    if (statusParam === "success") {
+      hasProcessedRedirectRef.current = true;
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (statusParam === "failed" && errorParam) {
+      hasProcessedRedirectRef.current = true;
+      setErrors({ form: decodeURIComponent(errorParam) });
+    }
+  }, []);
 
   const serviceOptions: SelectOption[] = [
     { value: "course-enrollment", label: "🎓 Course Enrollment / Academy Masterclass" },
     { value: "report-request", label: "📄 Personalized Numerology & Vastu Report Request" },
-    ...SERVICES.filter((service) => service.enabled).map((service) => ({
+    ...servicesList.filter((service) => service.enabled).map((service) => ({
       value: service.id,
       label: service.name,
     })),
@@ -212,23 +254,116 @@ function BookingFormContent() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/bookings", {
+      // 1. Create Consultation Booking order on backend
+      const res = await fetch("/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          type: "CONSULTATION_BOOKING",
+          bookingData: formData,
+        }),
       });
 
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
+      const orderData = await res.json();
+
+      if (!res.ok || !orderData.success) {
         setErrors({
-          form: errData?.error || "Unable to submit your booking request. Please try again.",
+          form: orderData.error || "Unable to initiate booking payment. Please try again.",
         });
         setIsSubmitting(false);
         return;
       }
 
-      setIsSubmitting(false);
-      setIsSubmitted(true);
+      // Dynamically import razorpay client helper
+      const { openRazorpayCheckout, pollPaymentStatus } = await import("@/lib/razorpay-client");
+
+      const handleBookingSuccess = () => {
+        setIsSubmitting(false);
+        setIsSubmitted(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      // 2. Trigger Razorpay Checkout Popup
+      await openRazorpayCheckout({
+        keyId: orderData.keyId,
+        orderId: orderData.orderId,
+        amount: orderData.amount,
+        title: "Vrikszon Occultaura",
+        description: `Consultation: ${orderData.serviceName || formData.service}`,
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+          contact: formData.phone,
+        },
+        onSuccess: async (response) => {
+          try {
+            // 3. Verify cryptographic signature on backend
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok && verifyData.success) {
+              handleBookingSuccess();
+              return;
+            }
+
+            // Fallback status check
+            const check = await pollPaymentStatus(orderData.orderId, 5, 1200);
+            if (check.isPaid) {
+              handleBookingSuccess();
+              return;
+            }
+
+            setErrors({
+              form: verifyData.error || "Payment verification is pending bank confirmation. If debited, your consultation will confirm automatically.",
+            });
+            setIsSubmitting(false);
+          } catch (verifyErr) {
+            console.error("Booking payment verification error:", verifyErr);
+            // Fallback status check
+            const check = await pollPaymentStatus(orderData.orderId, 5, 1200);
+            if (check.isPaid) {
+              handleBookingSuccess();
+              return;
+            }
+            setErrors({
+              form: "Payment confirmation is in progress with your bank. If amount was debited, your consultation booking will be confirmed automatically.",
+            });
+            setIsSubmitting(false);
+          }
+        },
+        onDismiss: async () => {
+          // Check if payment was captured via Netbanking/UPI redirect before marking dismissed
+          const check = await pollPaymentStatus(orderData.orderId, 6, 1200);
+          if (check.isPaid) {
+            handleBookingSuccess();
+            return;
+          }
+
+          setIsSubmitting(false);
+          setErrors({
+            form: "Payment checkout was closed. If your bank account was debited, your consultation booking will be confirmed automatically within a few minutes.",
+          });
+        },
+        onError: async (err) => {
+          console.error("Razorpay Popup Error:", err);
+          // Check if payment actually succeeded despite popup error
+          const check = await pollPaymentStatus(orderData.orderId, 5, 1200);
+          if (check.isPaid) {
+            handleBookingSuccess();
+            return;
+          }
+
+          setIsSubmitting(false);
+          setErrors({
+            form: "Unable to complete payment. Please check your internet connection or try another payment method.",
+          });
+        },
+      });
     } catch (err) {
       console.error("Booking submission error:", err);
       setErrors({
@@ -618,10 +753,10 @@ function BookingFormContent() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Submitting Request...
+                      Opening Secure Payment...
                     </span>
                   ) : (
-                    "Submit Consultation Request"
+                    "Proceed to Book & Pay Securely"
                   )}
                 </Button>
               </form>

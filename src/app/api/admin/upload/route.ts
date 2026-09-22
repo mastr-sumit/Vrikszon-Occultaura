@@ -26,16 +26,16 @@ function slugifyFileName(rawName: string): string {
 
 export async function POST(request: Request) {
   try {
-    // 1. Strict rate limit check for file uploads
-    const rateLimit = checkRouteRateLimit(request, "strict");
-    if (!rateLimit.allowed && rateLimit.response) {
-      return rateLimit.response;
-    }
-
-    // 2. Authentication check
+    // 1. Authentication check
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // 2. Rate limit check for authenticated admin file uploads
+    const rateLimit = checkRouteRateLimit(request, "authenticated");
+    if (!rateLimit.allowed && rateLimit.response) {
+      return rateLimit.response;
     }
 
     const { searchParams } = new URL(request.url);
@@ -53,8 +53,10 @@ export async function POST(request: Request) {
     const maxSize = uploadType === "image" ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
     if (file.size > maxSize) {
       const maxMb = (maxSize / (1024 * 1024)).toFixed(0);
+      const fileMb = (file.size / (1024 * 1024)).toFixed(2);
+      console.warn(`[UPLOAD_SIZE_EXCEEDED] File "${file.name}" size ${fileMb}MB exceeds maximum limit of ${maxMb}MB.`);
       return NextResponse.json(
-        { error: `File size exceeds the maximum limit of ${maxMb}MB.` },
+        { error: `File size (${fileMb}MB) exceeds the maximum allowed limit of ${maxMb}MB.` },
         { status: 400 }
       );
     }
@@ -70,6 +72,15 @@ export async function POST(request: Request) {
         : validateVideoMagicBytes(buffer);
 
     if (!contentValidation.valid || !contentValidation.extension) {
+      console.warn(`[UPLOAD_REJECTED] /api/admin/upload security check failed:`, {
+        fileName: file.name,
+        browserMimeType: file.type,
+        fileSize: file.size,
+        uploadType,
+        validationError: contentValidation.error,
+        headerHex: buffer.subarray(0, 32).toString("hex"),
+        headerAscii: buffer.subarray(0, 32).toString("latin1").replace(/[^\x20-\x7E]/g, "."),
+      });
       return NextResponse.json(
         {
           error:
@@ -113,6 +124,14 @@ export async function POST(request: Request) {
     await fs.promises.writeFile(targetFilePath, buffer);
 
     const publicUrl = `/${sanitizedFolder}/${finalFilename}`;
+
+    console.info(`[UPLOAD_SUCCESS] /api/admin/upload:`, {
+      filename: finalFilename,
+      url: publicUrl,
+      size: file.size,
+      mimeType: contentValidation.mimeType,
+      type: uploadType,
+    });
 
     return NextResponse.json(
       {

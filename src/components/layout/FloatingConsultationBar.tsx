@@ -72,7 +72,7 @@ export function FloatingConsultationBar() {
 
             {/* 3. WhatsApp Quick Consultation */}
             <a
-              href="https://wa.me/919999999999?text=Hello%20Vrikszon%20Occultaura,%20I%20would%20like%20to%20consult%20regarding%20Vedic%20Numerology%20and%20Vastu."
+              href="https://wa.me/919073190525?text=Hello%20Vrikszon%20Occultaura,%20I%20would%20like%20to%20consult%20regarding%20Vedic%20Numerology%20and%20Vastu."
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/30 transition-all"

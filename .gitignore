@@ -22,11 +22,8 @@
 *.sqlite3
 
 # Environment files (NEVER commit secrets)
-.env
-.env*.local
-.env.development
-.env.production
-.env.test
+.env*
+*.backup
 !.env.example
 
 # Sensitive keys & certificates

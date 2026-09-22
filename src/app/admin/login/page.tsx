@@ -32,10 +32,16 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
+      const fullCallbackUrl =
+        typeof window !== "undefined"
+          ? new URL(callbackUrl.startsWith("/") ? callbackUrl : `/${callbackUrl}`, window.location.origin).toString()
+          : "/admin";
+
       const res = await signIn("credentials", {
         email: cleanEmail,
         password,
         redirect: false,
+        callbackUrl: fullCallbackUrl,
       });
 
       if (res?.error || !res?.ok) {

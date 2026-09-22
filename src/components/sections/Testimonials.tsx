@@ -90,11 +90,12 @@ const TestimonialCard = ({ testimonial, variants }: TestimonialCardProps) => {
           >
             {testimonial.posterImage && (
               <Image
-                src={testimonial.posterImage}
+                src={testimonial.posterImage.startsWith("http") || testimonial.posterImage.startsWith("/") ? testimonial.posterImage : `/${testimonial.posterImage}`}
                 alt={`${testimonial.clientName} testimonial`}
                 fill
                 sizes="(max-width: 640px) 280px, (max-width: 1024px) 340px, 380px"
                 className="object-cover transition-transform duration-300 group-hover/btn:scale-105"
+                unoptimized
               />
             )}
 
@@ -143,15 +144,23 @@ const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
   },
 ];
 
+interface TestimonialsSectionProps {
+  initialTestimonials?: TestimonialItem[];
+}
+
 /**
  * Testimonials ("Our Testimonials")
  *
  * Database-driven social-proof section featuring inline 9:16 portrait video testimonials.
  */
-const Testimonials = () => {
+const Testimonials = ({ initialTestimonials }: TestimonialsSectionProps) => {
   const shouldReduceMotion = useReducedMotion();
   const trackRef = useRef<HTMLDivElement>(null);
-  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(DEFAULT_TESTIMONIALS);
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(
+    initialTestimonials && initialTestimonials.length > 0
+      ? initialTestimonials
+      : DEFAULT_TESTIMONIALS
+  );
   const [isAtStart, setIsAtStart] = useState(true);
   const [isAtEnd, setIsAtEnd] = useState(false);
 
@@ -160,10 +169,10 @@ const Testimonials = () => {
     let isMounted = true;
     async function loadTestimonials() {
       try {
-        const res = await fetch("/api/testimonials");
+        const res = await fetch("/api/testimonials", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && Array.isArray(data) && data.length > 0) {
+          if (isMounted && Array.isArray(data)) {
             setTestimonials(data);
           }
         }

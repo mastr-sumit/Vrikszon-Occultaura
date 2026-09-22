@@ -220,19 +220,19 @@ const Hero = () => {
             {/* Eyebrow Line */}
             <motion.div
               {...fadeUp(0.08, 0.8)}
-              className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80 sm:text-small font-sans"
+              className="inline-flex flex-wrap items-center justify-center lg:justify-start gap-2.5 text-xs sm:text-sm md:text-base font-bold uppercase tracking-[0.22em] text-white/90 font-sans"
             >
-              <span className="text-gold-400 text-[10px]" aria-hidden="true">✦</span>
+              <span className="text-gold-400 text-xs" aria-hidden="true">✦</span>
               <span>NUMBERS</span>
-              <span className="text-gold-400/80 text-[10px]" aria-hidden="true">✦</span>
+              <span className="text-gold-400/80 text-xs" aria-hidden="true">✦</span>
               <span>ENERGY</span>
-              <span className="text-gold-400/80 text-[10px]" aria-hidden="true">✦</span>
+              <span className="text-gold-400/80 text-xs" aria-hidden="true">✦</span>
               <span>DIRECTION</span>
-              <span className="text-gold-400/80 text-[10px]" aria-hidden="true">✦</span>
-              <span className="text-gold-400 font-bold drop-shadow-[0_0_12px_rgba(212,175,55,0.4)]">
+              <span className="text-gold-400/80 text-xs" aria-hidden="true">✦</span>
+              <span className="text-gold-400 font-extrabold drop-shadow-[0_0_14px_rgba(212,175,55,0.5)]">
                 DESTINY
               </span>
-              <span className="text-gold-400 text-[10px]" aria-hidden="true">✦</span>
+              <span className="text-gold-400 text-xs" aria-hidden="true">✦</span>
             </motion.div>
 
             {/* Headline Scale */}

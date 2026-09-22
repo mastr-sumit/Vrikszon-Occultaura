@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
@@ -106,16 +106,44 @@ const ProductCard = ({ product, variants }: ProductCardProps) => {
   );
 };
 
+interface ProductsSectionProps {
+  initialProducts?: Product[];
+}
+
 /**
  * Products ("Featured Collection")
  *
  * Homepage shop preview for physical/spiritual products.
  * Static, boutique-style grid: 8 featured items in 4 columns across 2 rows.
  */
-const Products = () => {
+const Products = ({ initialProducts }: ProductsSectionProps) => {
   const shouldReduceMotion = useReducedMotion();
+  const [productsList, setProductsList] = useState<Product[]>(
+    initialProducts && initialProducts.length > 0 ? initialProducts : PRODUCTS
+  );
 
-  const activeProducts = PRODUCTS.filter((product) => product.enabled && product.featured);
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProducts() {
+      try {
+        const res = await fetch("/api/products", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data)) {
+            setProductsList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load products from API:", err);
+      }
+    }
+    loadProducts();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeProducts = productsList.filter((product) => product.enabled && product.featured);
 
   const gridVariants = {
     hidden: {},

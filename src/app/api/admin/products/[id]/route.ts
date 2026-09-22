@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { updateProductSchema, resourceIdSchema } from "@/lib/validations/schemas";
@@ -97,12 +98,25 @@ export async function PATCH(
         : null;
     }
 
+    // Link or auto-create Category record if category changed
+    let categoryId: string | undefined = undefined;
+    if (data.category !== undefined) {
+      const cat = await prisma.category.findFirst({
+        where: { name: { equals: data.category.trim(), mode: "insensitive" }, type: "PRODUCT" },
+      });
+      if (cat) {
+        categoryId = cat.id;
+      }
+    }
+
+    const t0 = Date.now();
     const updated = await prisma.product.update({
       where: { id: idValidation.data },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.name !== undefined && { name: data.name }),
         ...(data.category !== undefined && { category: data.category }),
+        ...(categoryId !== undefined && { categoryId }),
         ...(data.shortDescription !== undefined && { shortDescription: data.shortDescription }),
         ...(data.subtitle !== undefined && { subtitle: data.subtitle }),
         ...(benefitsString !== undefined && { benefits: benefitsString }),
@@ -111,10 +125,17 @@ export async function PATCH(
         ...(data.icon !== undefined && { icon: data.icon }),
         ...(data.featured !== undefined && { featured: data.featured }),
         ...(data.enabled !== undefined && { enabled: data.enabled }),
+        ...(data.archived !== undefined && { archived: data.archived }),
         ...(data.href !== undefined && { href: data.href }),
         ...(data.variantsNote !== undefined && { variantsNote: data.variantsNote }),
       },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/shop");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Product Update (${updated.name}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json(formatProduct(updated));
   } catch (error) {
@@ -149,9 +170,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    const t0 = Date.now();
     await prisma.product.delete({
       where: { id: idValidation.data },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/shop");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Product Delete (${existingProduct.name}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json({
       success: true,

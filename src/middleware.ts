@@ -29,7 +29,7 @@ export default auth((req) => {
       tier = "auth";
     } else if (pathname.startsWith("/api/admin")) {
       tier = isLoggedIn ? "authenticated" : "strict";
-    } else if (pathname === "/api/orders" || pathname === "/api/admin/upload") {
+    } else if (pathname === "/api/orders") {
       tier = "strict";
     }
 
@@ -68,5 +68,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin", "/admin/:path*", "/api/:path*"],
+  matcher: ["/admin", "/admin/:path*", "/api/((?!admin/upload|media).*)"],
 };

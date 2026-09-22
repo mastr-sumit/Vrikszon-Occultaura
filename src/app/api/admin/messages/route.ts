@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { createContactMessageSchema, updateContactMessageSchema } from "@/lib/validations/schemas";
+import { createContactMessageSchema, updateMessageSchema } from "@/lib/validations/schemas";
 import { parseAndValidateJson } from "@/lib/validations/validator";
 import { checkRouteRateLimit } from "@/lib/rate-limit";
 import { handleServerError } from "@/lib/errors";
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 }
 
 /**
- * PATCH /api/admin/messages — Mark message as read/unread by id
+ * PATCH /api/admin/messages — Update message isRead or archived state by id
  */
 export async function PATCH(request: Request) {
   try {
@@ -87,7 +87,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const validation = await parseAndValidateJson(request, updateContactMessageSchema);
+    const validation = await parseAndValidateJson(request, updateMessageSchema);
     if (!validation.success) {
       return validation.response;
     }
@@ -105,12 +105,61 @@ export async function PATCH(request: Request) {
     const updated = await prisma.contactMessage.update({
       where: { id: data.id },
       data: {
-        isRead: data.isRead,
+        ...(data.isRead !== undefined && { isRead: data.isRead }),
+        ...(data.archived !== undefined && { archived: data.archived }),
       },
     });
 
     return NextResponse.json(updated);
   } catch (error) {
-    return handleServerError(error, "PATCH /api/admin/messages", "Failed to update message status.");
+    return handleServerError(error, "PATCH /api/admin/messages", "Failed to update message.");
   }
 }
+
+/**
+ * DELETE /api/admin/messages — Permanently delete contact message by id
+ */
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    let id = url.searchParams.get("id");
+
+    if (!id) {
+      try {
+        const body = await request.json();
+        id = body?.id;
+      } catch {
+        // no body
+      }
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: "Message ID is required" }, { status: 400 });
+    }
+
+    const existing = await prisma.contactMessage.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+    }
+
+    await prisma.contactMessage.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Message from ${existing.name} deleted successfully`,
+    });
+  } catch (error) {
+    return handleServerError(error, "DELETE /api/admin/messages", "Failed to delete message.");
+  }
+}
+

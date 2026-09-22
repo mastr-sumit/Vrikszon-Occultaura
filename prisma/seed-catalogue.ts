@@ -61,11 +61,22 @@ async function main() {
     // 2. Migrate Courses
     let coursesCount = 0;
     for (const course of COURSES) {
+      let categoryId: string | null = null;
+      if (course.category) {
+        const cat = await prisma.category.findFirst({
+          where: { name: { equals: course.category.trim(), mode: "insensitive" }, type: "COURSE" },
+        });
+        if (cat) {
+          categoryId = cat.id;
+        }
+      }
+
       await prisma.course.upsert({
         where: { slug: course.slug },
         update: {
           title: course.title,
           category: course.category ?? null,
+          categoryId,
           image: course.image,
           price: course.price,
           originalPrice: course.originalPrice ?? null,
@@ -77,6 +88,7 @@ async function main() {
           slug: course.slug,
           title: course.title,
           category: course.category ?? null,
+          categoryId,
           image: course.image,
           price: course.price,
           originalPrice: course.originalPrice ?? null,

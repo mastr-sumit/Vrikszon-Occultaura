@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { createCourseSchema } from "@/lib/validations/schemas";
@@ -54,11 +55,24 @@ export async function POST(request: Request) {
       );
     }
 
+    // Link or auto-create Category record
+    let categoryId: string | null = null;
+    if (data.category) {
+      const cat = await prisma.category.findFirst({
+        where: { name: { equals: data.category.trim(), mode: "insensitive" }, type: "COURSE" },
+      });
+      if (cat) {
+        categoryId = cat.id;
+      }
+    }
+
+    const t0 = Date.now();
     const course = await prisma.course.create({
       data: {
         slug: data.slug,
         title: data.title,
         category: data.category ?? null,
+        categoryId,
         image: data.image,
         price: data.price ?? null,
         originalPrice: data.originalPrice ?? null,
@@ -67,6 +81,12 @@ export async function POST(request: Request) {
         enabled: data.enabled ?? true,
       },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/courses");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Course Create (${course.title}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json(course, { status: 201 });
   } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { Search, X, Sparkles, Filter } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -8,6 +8,10 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { SERVICES, type Service } from "@/data/services";
 import { ServiceCard } from "@/components/services/ServiceCard";
 import { cn } from "@/lib/utils";
+
+interface ServicesGridProps {
+  initialServices?: Service[];
+}
 
 const CATEGORIES = [
   { id: "all", label: "All Services" },
@@ -18,19 +22,43 @@ const CATEGORIES = [
 ];
 
 /**
- * ServicesGrid — Enhanced with 21st.dev Category Filter Tabs & Live Search
+ * ServicesGrid — Enhanced with Dynamic Database Sync, Category Filter Tabs & Live Search
  *
- * Provides frictionless instant discovery across all 21 services with
+ * Provides frictionless instant discovery across all services with
  * animated filter pills, live search bar, dynamic results counter, and empty states.
  */
-const ServicesGrid = () => {
+const ServicesGrid = ({ initialServices }: ServicesGridProps) => {
   const shouldReduceMotion = useReducedMotion();
+  const [servicesList, setServicesList] = useState<Service[]>(
+    initialServices && initialServices.length > 0 ? initialServices : SERVICES
+  );
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const activeServices = useMemo(() => {
-    return SERVICES.filter((service) => service.enabled);
+  useEffect(() => {
+    let isMounted = true;
+    async function loadServices() {
+      try {
+        const res = await fetch("/api/services", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data) && data.length > 0) {
+            setServicesList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load services in catalog:", err);
+      }
+    }
+    loadServices();
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
+  const activeServices = useMemo(() => {
+    return servicesList.filter((service) => service.enabled);
+  }, [servicesList]);
 
   const filteredServices = useMemo(() => {
     return activeServices.filter((service) => {
@@ -40,11 +68,11 @@ const ServicesGrid = () => {
         (selectedCategory === "Numerology" &&
           (service.category === "Numerology" || service.name.toLowerCase().includes("numerology") || service.name.toLowerCase().includes("grid") || service.name.toLowerCase().includes("number"))) ||
         (selectedCategory === "Name & Business" &&
-          (service.category === "Business & Name" || service.name.toLowerCase().includes("business") || service.name.toLowerCase().includes("name") || service.name.toLowerCase().includes("pronology"))) ||
+          (service.category === "Business & Name" || service.category === "Name & Brand" || service.name.toLowerCase().includes("business") || service.name.toLowerCase().includes("name") || service.name.toLowerCase().includes("pronology"))) ||
         (selectedCategory === "KP Astrology" &&
           (service.category === "Astrology" || service.name.toLowerCase().includes("astrology") || service.name.toLowerCase().includes("dasha") || service.name.toLowerCase().includes("kp"))) ||
         (selectedCategory === "Remedies & Healing" &&
-          (service.category === "Remedies & Healing" || service.name.toLowerCase().includes("remedies") || service.name.toLowerCase().includes("healing") || service.name.toLowerCase().includes("yantra") || service.name.toLowerCase().includes("crystal") || service.name.toLowerCase().includes("rituals")));
+          (service.category === "Remedies & Healing" || service.category === "Vastu & Planetary" || service.name.toLowerCase().includes("remedies") || service.name.toLowerCase().includes("healing") || service.name.toLowerCase().includes("yantra") || service.name.toLowerCase().includes("crystal") || service.name.toLowerCase().includes("rituals")));
 
       // Search query matching
       const matchesSearch =
@@ -65,15 +93,15 @@ const ServicesGrid = () => {
     >
       <Container size="wide">
         <div className="mx-auto max-w-3xl text-center mb-10">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span className="text-small font-semibold uppercase tracking-[0.15em] text-gold-600">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
+            <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-600">
               Interactive Catalog
             </span>
-            <span className="h-px w-8 bg-gold-500/60" />
+            <span className="h-0.5 w-10 sm:w-12 bg-gold-500/80" />
           </div>
 
-          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl font-medium text-navy-950 tracking-tight">
+          <h2 className="font-heading text-h2 sm:text-h1 md:text-hero lg:text-display text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] font-semibold text-navy-950 tracking-tight leading-[1.15]">
             Comprehensive <span className="text-gold-600 italic">Services & Remedies</span>
           </h2>
 

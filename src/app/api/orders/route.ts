@@ -55,9 +55,10 @@ export async function POST(request: Request) {
       productMap.set(p.slug, p);
     });
 
-    // Ensure all requested products exist in database
+    // Ensure all requested products exist in database and are active
     for (const item of requestedItems) {
-      if (!productMap.has(item.productId)) {
+      const prod = productMap.get(item.productId);
+      if (!prod || !prod.enabled || prod.archived) {
         return NextResponse.json(
           { error: `Product "${item.productId}" is currently unavailable or invalid.` },
           { status: 400 }

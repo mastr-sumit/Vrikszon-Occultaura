@@ -47,8 +47,18 @@ export function FileUploadInput({
       ? "image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/gif"
       : "video/mp4,video/webm,video/quicktime";
 
+  const [imageError, setImageError] = useState(false);
+
+  // Reset image error state whenever currentValue changes
+  const normalizedUrl = currentValue
+    ? currentValue.startsWith("http") || currentValue.startsWith("/")
+      ? currentValue
+      : `/${currentValue}`
+    : "";
+
   const handleFile = async (file: File) => {
     setError(null);
+    setImageError(false);
     setIsUploading(true);
     setUploadProgress(`Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)...`);
 
@@ -119,6 +129,7 @@ export function FileUploadInput({
 
   const handleRemove = () => {
     onChange("");
+    setImageError(false);
     setError(null);
   };
 
@@ -149,14 +160,17 @@ export function FileUploadInput({
           <div className="flex items-center gap-3 min-w-0">
             {uploadType === "image" ? (
               <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border border-navy-800 bg-navy-900 flex items-center justify-center text-gold-400">
-                <Image
-                  src={currentValue!}
-                  alt="Upload preview"
-                  width={48}
-                  height={48}
-                  className="h-full w-full object-cover"
-                  unoptimized
-                />
+                {!imageError && normalizedUrl ? (
+                  /* Standard img tag avoids Next.js static asset cache or domain loader delay in admin previews */
+                  <img
+                    src={normalizedUrl}
+                    alt="Upload thumbnail preview"
+                    className="h-full w-full object-cover"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <FileImage className="h-6 w-6 text-navy-400" />
+                )}
               </div>
             ) : (
               <div className="relative h-12 w-12 shrink-0 rounded-lg overflow-hidden border border-navy-800 bg-navy-900 flex items-center justify-center text-gold-400">

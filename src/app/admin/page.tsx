@@ -11,8 +11,14 @@ export default async function AdminPage() {
     redirect("/admin/login");
   }
 
-  // Load all initial datasets directly from SQLite database for fast SSR
-  const [rawProducts, courses, testimonials, bookings, orders, messages] = await Promise.all([
+  // Load all initial datasets directly from database for fast SSR
+  const [services, rawProducts, courses, testimonials, bookings, orders, messages] = await Promise.all([
+    prisma.service.findMany({
+      orderBy: [
+        { displayOrder: "asc" },
+        { createdAt: "desc" },
+      ],
+    }),
     prisma.product.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.course.findMany({ orderBy: { createdAt: "desc" } }),
     prisma.testimonial.findMany({ orderBy: { createdAt: "desc" } }),
@@ -39,6 +45,7 @@ export default async function AdminPage() {
 
   return (
     <AdminDashboardClient
+      initialServices={services}
       initialProducts={products}
       initialCourses={courses}
       initialTestimonials={testimonials}

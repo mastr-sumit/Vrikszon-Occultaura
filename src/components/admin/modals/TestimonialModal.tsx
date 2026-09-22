@@ -68,6 +68,7 @@ export function TestimonialModal({
       });
     }
     setError(null);
+    setIsSubmitting(false);
   }, [testimonial, isOpen]);
 
   if (!isOpen) return null;
@@ -92,6 +93,8 @@ export function TestimonialModal({
     };
 
     setIsSubmitting(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
       const url = isEdit
@@ -104,21 +107,28 @@ export function TestimonialModal({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setError(data.error || "Failed to save testimonial.");
-        setIsSubmitting(false);
         return;
       }
 
       onSaved(data);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("Save testimonial error:", err);
-      setError("An unexpected network error occurred.");
+      if (err?.name === "AbortError") {
+        setError("Request timed out (15s). Please check connection and try again.");
+      } else {
+        setError(err?.message || "An unexpected network error occurred.");
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };

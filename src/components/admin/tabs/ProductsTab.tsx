@@ -13,6 +13,8 @@ import {
   XCircle,
   Star,
   Tag,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react";
 import { AdminProduct, ProductModal } from "../modals/ProductModal";
 import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
@@ -28,6 +30,8 @@ export function ProductsTab({
 }: ProductsTabProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
+  const [showArchived, setShowArchived] = useState(false);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +39,16 @@ export function ProductsTab({
 
   const [deleteProduct, setDeleteProduct] = useState<AdminProduct | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Counts
+  const archivedCount = useMemo(
+    () => products.filter((p) => p.archived).length,
+    [products]
+  );
+  const activeCount = useMemo(
+    () => products.filter((p) => !p.archived).length,
+    [products]
+  );
 
   // Extract unique categories
   const categories = useMemo(() => {
@@ -46,6 +60,13 @@ export function ProductsTab({
   // Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
+      // Archive filter
+      if (showArchived) {
+        if (!p.archived) return false;
+      } else {
+        if (p.archived) return false;
+      }
+
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -56,7 +77,7 @@ export function ProductsTab({
 
       return matchesSearch && matchesCategory;
     });
-  }, [products, searchTerm, selectedCategory]);
+  }, [products, showArchived, searchTerm, selectedCategory]);
 
   // Handle Save (Create / Update)
   const handleSaved = (savedProduct: AdminProduct) => {
@@ -68,6 +89,28 @@ export function ProductsTab({
       updated = [savedProduct, ...products];
     }
     onProductsUpdated(updated);
+  };
+
+  // Handle Archive Toggle
+  const handleToggleArchive = async (product: AdminProduct) => {
+    setUpdatingId(product.id);
+
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived: !product.archived }),
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        onProductsUpdated(products.map((p) => (p.id === product.id ? { ...p, ...updated } : p)));
+      }
+    } catch (err) {
+      console.error("Toggle archive product error:", err);
+    } finally {
+      setUpdatingId(null);
+    }
   };
 
   // Handle Delete
@@ -97,50 +140,82 @@ export function ProductsTab({
 
   return (
     <div className="space-y-6">
-      {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="flex flex-1 items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search products by name, slug..."
-              className="w-full h-10 rounded-base border border-navy-700 bg-navy-900/90 pl-10 pr-4 text-xs text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="w-48">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full h-10 rounded-base border border-navy-700 bg-navy-900/90 px-3 text-xs text-navy-200 focus:border-gold-400 focus:outline-none"
-            >
-              <option value="ALL">All Categories ({products.length})</option>
-              {categories.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Top Header & Archive Counter */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="font-heading text-h5 font-semibold text-white">
+            Products Catalog
+          </h3>
+          <p className="text-xs text-navy-300 mt-0.5">
+            {activeCount} active items · {archivedCount} archived
+          </p>
         </div>
 
-        {/* Add Product Button */}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedProduct(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 h-10 px-4 rounded-base bg-gold-500 text-xs font-semibold text-navy-950 hover:bg-gold-400 transition-colors shadow-sm cursor-pointer shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Add New Product</span>
-        </button>
+        {/* Top Actions: Archive Toggle & Add Product Button */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowArchived((prev) => !prev)}
+            className={`flex items-center gap-2 h-10 px-3 rounded-base border text-xs font-medium transition-colors cursor-pointer ${
+              showArchived
+                ? "border-gold-500/60 bg-gold-500/15 text-gold-300"
+                : "border-navy-700 bg-navy-900 text-navy-300 hover:text-white hover:border-navy-600"
+            }`}
+          >
+            {showArchived ? (
+              <>
+                <ArchiveRestore className="h-3.5 w-3.5 text-gold-400" />
+                <span>Showing Archived ({archivedCount})</span>
+              </>
+            ) : (
+              <>
+                <Archive className="h-3.5 w-3.5 text-navy-400" />
+                <span>Show Archived ({archivedCount})</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedProduct(null);
+              setIsModalOpen(true);
+            }}
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-base bg-gold-500 text-xs font-semibold text-navy-950 hover:bg-gold-400 transition-colors shadow-sm cursor-pointer shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Action Bar / Filters */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-navy-400" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search products by name, slug..."
+            className="w-full h-10 rounded-base border border-navy-700 bg-navy-900/90 pl-10 pr-4 text-xs text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+          />
+        </div>
+
+        <div className="w-full sm:w-48">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="w-full h-10 rounded-base border border-navy-700 bg-navy-900/90 px-3 text-xs text-navy-200 focus:border-gold-400 focus:outline-none"
+          >
+            <option value="ALL">All Categories ({products.length})</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Datatable Card */}
@@ -160,14 +235,18 @@ export function ProductsTab({
               {filteredProducts.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-navy-400">
-                    No products found matching your search or filters.
+                    {showArchived
+                      ? "No archived products found."
+                      : "No products found matching your search or filters."}
                   </td>
                 </tr>
               ) : (
                 filteredProducts.map((product) => (
                   <tr
                     key={product.id}
-                    className="hover:bg-navy-800/40 transition-colors"
+                    className={`hover:bg-navy-800/40 transition-colors ${
+                      product.archived ? "opacity-75 bg-navy-950/40" : ""
+                    }`}
                   >
                     {/* Item & Visual */}
                     <td className="py-3.5 px-4">
@@ -187,9 +266,16 @@ export function ProductsTab({
                           )}
                         </div>
                         <div className="min-w-0 max-w-xs">
-                          <p className="font-medium text-white truncate text-small">
-                            {product.name}
-                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="font-medium text-white truncate text-small">
+                              {product.name}
+                            </p>
+                            {product.archived && (
+                              <span className="px-1.5 py-0.2 rounded bg-navy-800 border border-navy-700 text-[9px] font-medium text-navy-300 uppercase">
+                                Archived
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[11px] text-navy-400 font-mono truncate">
                             /{product.slug}
                           </p>
@@ -245,7 +331,7 @@ export function ProductsTab({
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           type="button"
                           onClick={() => {
@@ -257,6 +343,21 @@ export function ProductsTab({
                           <Edit2 className="h-3 w-3 text-gold-400" />
                           <span>Edit</span>
                         </button>
+
+                        <button
+                          type="button"
+                          title={product.archived ? "Unarchive Product" : "Archive Product"}
+                          disabled={updatingId === product.id}
+                          onClick={() => handleToggleArchive(product)}
+                          className="p-1.5 rounded-base border border-navy-700 bg-navy-950 text-navy-300 hover:text-gold-300 hover:border-gold-500/40 transition-colors disabled:opacity-50 cursor-pointer"
+                        >
+                          {product.archived ? (
+                            <ArchiveRestore className="h-3.5 w-3.5 text-gold-400" />
+                          ) : (
+                            <Archive className="h-3.5 w-3.5 text-navy-400" />
+                          )}
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setDeleteProduct(product)}
@@ -308,3 +409,4 @@ export function ProductsTab({
     </div>
   );
 }
+

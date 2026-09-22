@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { updateCourseSchema, resourceIdSchema } from "@/lib/validations/schemas";
@@ -86,12 +87,29 @@ export async function PATCH(
       }
     }
 
+    // Link or auto-create Category record if category changed
+    let categoryId: string | null | undefined = undefined;
+    if (data.category !== undefined) {
+      if (data.category) {
+        const cat = await prisma.category.findFirst({
+          where: { name: { equals: data.category.trim(), mode: "insensitive" }, type: "COURSE" },
+        });
+        if (cat) {
+          categoryId = cat.id;
+        }
+      } else {
+        categoryId = null;
+      }
+    }
+
+    const t0 = Date.now();
     const updated = await prisma.course.update({
       where: { id: idValidation.data },
       data: {
         ...(data.slug !== undefined && { slug: data.slug }),
         ...(data.title !== undefined && { title: data.title }),
         ...(data.category !== undefined && { category: data.category }),
+        ...(categoryId !== undefined && { categoryId }),
         ...(data.image !== undefined && { image: data.image }),
         ...(data.price !== undefined && { price: data.price }),
         ...(data.originalPrice !== undefined && { originalPrice: data.originalPrice }),
@@ -100,6 +118,12 @@ export async function PATCH(
         ...(data.enabled !== undefined && { enabled: data.enabled }),
       },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/courses");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Course Update (${updated.title}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -134,9 +158,16 @@ export async function DELETE(
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
+    const t0 = Date.now();
     await prisma.course.delete({
       where: { id: idValidation.data },
     });
+    const tDb = Date.now();
+
+    revalidatePath("/");
+    revalidatePath("/courses");
+    const tRevalidate = Date.now();
+    console.log(`[PERF_TIMING] Course Delete (${existingCourse.title}): DB=${tDb - t0}ms, Revalidate=${tRevalidate - tDb}ms, Total=${tRevalidate - t0}ms`);
 
     return NextResponse.json({
       success: true,

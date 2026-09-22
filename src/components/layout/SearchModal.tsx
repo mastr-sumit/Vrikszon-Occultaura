@@ -63,6 +63,40 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     };
   }, [isOpen, onClose]);
 
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS);
+  const [coursesList, setCoursesList] = useState<Course[]>(COURSES);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let isMounted = true;
+    async function loadLiveSearchData() {
+      try {
+        const [prodRes, courseRes] = await Promise.all([
+          fetch("/api/products", { cache: "no-store" }),
+          fetch("/api/courses", { cache: "no-store" }),
+        ]);
+        if (prodRes.ok) {
+          const prods = await prodRes.json();
+          if (isMounted && Array.isArray(prods) && prods.length > 0) {
+            setProductsList(prods);
+          }
+        }
+        if (courseRes.ok) {
+          const crs = await courseRes.json();
+          if (isMounted && Array.isArray(crs) && crs.length > 0) {
+            setCoursesList(crs);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load search data:", err);
+      }
+    }
+    loadLiveSearchData();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen]);
+
   // Unified dataset
   const allSearchableItems = useMemo<SearchResultItem[]>(() => {
     const items: SearchResultItem[] = [];
@@ -81,7 +115,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     });
 
     // Add Courses
-    COURSES.filter((c) => c.enabled).forEach((course) => {
+    coursesList.filter((c) => c.enabled).forEach((course) => {
       items.push({
         id: `course-${course.id}`,
         type: "course",
@@ -94,7 +128,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     });
 
     // Add Shop Products
-    PRODUCTS.filter((p) => p.enabled).forEach((product) => {
+    productsList.filter((p) => p.enabled).forEach((product) => {
       items.push({
         id: `product-${product.id}`,
         type: "product",
@@ -107,7 +141,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     });
 
     return items;
-  }, []);
+  }, [productsList, coursesList]);
 
   // Filtered results
   const results = useMemo(() => {

@@ -20,7 +20,7 @@ const SCROLL_STEP_RATIO = 0.85;
 /**
  * EsteemServices ("Our Esteemed Services")
  *
- * Homepage carousel of 6 curated paid consultation services + 1 Explore All card.
+ * Homepage carousel of curated paid consultation services + 1 Explore All card.
  */
 const EsteemServices = () => {
   const shouldReduceMotion = useReducedMotion();
@@ -29,11 +29,34 @@ const EsteemServices = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeServices = SERVICES.filter(
+  const [servicesList, setServicesList] = useState(SERVICES);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadFeaturedServices() {
+      try {
+        const res = await fetch("/api/services?featured=true", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data) && data.length > 0) {
+            setServicesList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load featured services on homepage:", err);
+      }
+    }
+    loadFeaturedServices();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const activeServices = servicesList.filter(
     (service) => service.enabled && service.featured
   );
 
-  const totalCards = activeServices.length + 1; // 6 services + 1 Explore All card
+  const totalCards = activeServices.length + 1; // Featured services + 1 Explore All card
 
   const pauseThenResume = useCallback(() => {
     setIsPaused(true);

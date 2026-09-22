@@ -19,6 +19,15 @@ export const BookingStatus = {
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
 
 
+export const CategoryType = {
+  PRODUCT: 'PRODUCT',
+  COURSE: 'COURSE',
+  SERVICE: 'SERVICE'
+} as const
+
+export type CategoryType = (typeof CategoryType)[keyof typeof CategoryType]
+
+
 export const OrderStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -33,7 +42,27 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus]
 export const PaymentStatus = {
   UNPAID: 'UNPAID',
   PAID: 'PAID',
+  FAILED: 'FAILED',
   REFUNDED: 'REFUNDED'
 } as const
 
 export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const PaymentType = {
+  SHOP_ORDER: 'SHOP_ORDER',
+  CONSULTATION_BOOKING: 'CONSULTATION_BOOKING',
+  COURSE_PURCHASE: 'COURSE_PURCHASE'
+} as const
+
+export type PaymentType = (typeof PaymentType)[keyof typeof PaymentType]
+
+
+export const PaymentRecordStatus = {
+  CREATED: 'CREATED',
+  PAID: 'PAID',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED'
+} as const
+
+export type PaymentRecordStatus = (typeof PaymentRecordStatus)[keyof typeof PaymentRecordStatus]

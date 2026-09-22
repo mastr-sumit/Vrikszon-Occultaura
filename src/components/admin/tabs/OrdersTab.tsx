@@ -15,7 +15,9 @@ import {
   MapPin,
   Sparkles,
   AlertCircle,
+  Trash2,
 } from "lucide-react";
+import { DeleteConfirmModal } from "../modals/DeleteConfirmModal";
 
 export interface AdminOrderItem {
   id: string;
@@ -43,7 +45,9 @@ export interface AdminOrder {
   pincode: string;
   totalPrice: number;
   status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
-  paymentStatus: "UNPAID" | "PAID" | "REFUNDED";
+  paymentStatus: "UNPAID" | "PAID" | "FAILED" | "REFUNDED";
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
   createdAt: string | Date;
   updatedAt: string | Date;
   items: AdminOrderItem[];
@@ -60,6 +64,10 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
   const [paymentFilter, setPaymentFilter] = useState("ALL");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updateError, setUpdateError] = useState<string | null>(null);
+
+  // Delete modal state
+  const [deleteOrder, setDeleteOrder] = useState<AdminOrder | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filtered orders
   const filteredOrders = useMemo(() => {
@@ -119,6 +127,32 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
       setUpdateError("Network error occurred while updating order status");
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  // Handle delete
+  const handleConfirmDelete = async () => {
+    if (!deleteOrder) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/admin/orders/${deleteOrder.id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setUpdateError(data.error || "Failed to delete order");
+        return;
+      }
+
+      onOrdersUpdated(orders.filter((o) => o.id !== deleteOrder.id));
+      setDeleteOrder(null);
+    } catch (err) {
+      console.error("Delete order error:", err);
+      setUpdateError("Network error occurred while deleting order");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -272,8 +306,13 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
                     </span>
                   </div>
 
-                  <p className="text-xs text-navy-200 mt-1 font-medium truncate">
-                    {order.fullName} ({order.email} · {order.phone})
+                  <p className="text-xs text-navy-200 mt-1 font-medium truncate flex items-center flex-wrap gap-2">
+                    <span>{order.fullName} ({order.email} · {order.phone})</span>
+                    {order.razorpayPaymentId && (
+                      <span className="font-mono text-[10px] text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/40">
+                        RZP: {order.razorpayPaymentId}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -326,6 +365,16 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
                       <option value="PAID">PAID</option>
                       <option value="REFUNDED">REFUNDED</option>
                     </select>
+
+                    <button
+                      type="button"
+                      onClick={() => setDeleteOrder(order)}
+                      className="p-1.5 rounded-base text-navy-400 hover:text-rose-400 hover:bg-rose-950/40 border border-transparent hover:border-rose-500/30 transition-colors cursor-pointer"
+                      title="Delete / Clear Order"
+                      aria-label={`Delete order ${order.orderNumber}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -374,6 +423,16 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={!!deleteOrder}
+        title="Delete Order Record"
+        message={`Are you sure you want to permanently delete order "${deleteOrder?.orderNumber}" for ${deleteOrder?.fullName}? This action cannot be undone.`}
+        isDeleting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteOrder(null)}
+      />
     </div>
   );
 }

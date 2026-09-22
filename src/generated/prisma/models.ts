@@ -10,10 +10,13 @@
  */
 export type * from './models/Booking'
 export type * from './models/ContactMessage'
+export type * from './models/Category'
+export type * from './models/Service'
 export type * from './models/Product'
 export type * from './models/Course'
 export type * from './models/Order'
 export type * from './models/OrderItem'
+export type * from './models/Payment'
 export type * from './models/Testimonial'
 export type * from './models/AdminUser'
 export type * from './commonInputTypes'

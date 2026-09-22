@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronRight, ShoppingBag, Sparkles } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -28,14 +28,6 @@ const INITIAL_SHIPPING_DATA: ShippingFormData = {
  * Transactional checkout experience. Unlike marketing pages, this page keeps
  * visuals minimal, clean, and zero-distraction to reduce friction and anxiety
  * near conversion points per ui-ux-pro-max guidelines.
- *
- * Layout Strategy:
- * - Simple transactional header with breadcrumbs (Home > Shop > Checkout) and plain 'Checkout' heading.
- * - Empty-cart guard: if cart is empty and no order submitted, renders empty state with link to /shop.
- * - Active checkout layout: two-column grid on desktop (ShippingForm & PaymentSection on left, sticky OrderSummary on right).
- *   On mobile, OrderSummary renders FIRST (above forms) so users have immediate visibility of items and totals
- *   before entering delivery information.
- * - Post-submission state: renders OrderConfirmation and clears the active cart.
  */
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
@@ -51,6 +43,122 @@ export default function CheckoutPage() {
     items: CartItem[];
     totalPrice: number;
   } | null>(null);
+
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [pendingOrderNumber, setPendingOrderNumber] = useState<string | null>(null);
+  const [isLoadingOrder, setIsLoadingOrder] = useState(false);
+
+  const hasProcessedRedirectRef = useRef(false);
+  const isConfirmedSuccessRef = useRef(false);
+
+  // Manual status check handler
+  const handleCheckStatusNow = async () => {
+    if (!pendingOrderId || isConfirmedSuccessRef.current) return;
+    setIsVerifying(true);
+    setVerificationMessage("Checking real-time payment status with bank and Razorpay...");
+
+    const { checkPaymentStatusOnce } = await import("@/lib/razorpay-client");
+    const check = await checkPaymentStatusOnce(pendingOrderId);
+
+    if (isConfirmedSuccessRef.current) return;
+
+    if (check.isPaid) {
+      isConfirmedSuccessRef.current = true;
+      setSubmittedOrder({
+        orderId: pendingOrderNumber || pendingOrderId,
+        shippingDetails: shippingData,
+        items: [...items],
+        totalPrice: totalPrice,
+      });
+      clearCart();
+      setIsSubmitting(false);
+      setIsVerifying(false);
+      setSubmitError(null);
+      setIsSubmitted(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (!isConfirmedSuccessRef.current) {
+      setIsVerifying(false);
+      setSubmitError(
+        `We haven't received confirmation from your bank yet for Order #${pendingOrderNumber || pendingOrderId}. If money was deducted, our automated system will confirm your order shortly.`
+      );
+    }
+  };
+
+  // Handle Netbanking / Gateway direct redirect return (Guarded to run EXACTLY once)
+  useEffect(() => {
+    if (typeof window === "undefined" || hasProcessedRedirectRef.current) return;
+
+    const url = new URL(window.location.href);
+    const statusParam = url.searchParams.get("status");
+    const orderIdParam = url.searchParams.get("orderId");
+    const errorParam = url.searchParams.get("error");
+
+    if (statusParam === "success" && orderIdParam) {
+      hasProcessedRedirectRef.current = true;
+      isConfirmedSuccessRef.current = true;
+      setSubmitError(null);
+      setIsVerifying(false);
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setIsLoadingOrder(true);
+      clearCart();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // Immediate baseline order state
+      setSubmittedOrder({
+        orderId: orderIdParam,
+        shippingDetails: INITIAL_SHIPPING_DATA,
+        items: [],
+        totalPrice: 0,
+      });
+
+      // Fetch verified order items and shipping details from backend
+      async function fetchFullOrderDetails() {
+        try {
+          const res = await fetch(`/api/orders/details?orderNumber=${encodeURIComponent(orderIdParam!)}`, {
+            cache: "no-store",
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.order) {
+              setSubmittedOrder({
+                orderId: data.order.orderNumber,
+                shippingDetails: {
+                  fullName: data.order.fullName,
+                  email: data.order.email,
+                  phone: data.order.phone,
+                  addressLine1: data.order.addressLine1,
+                  addressLine2: data.order.addressLine2 || "",
+                  city: data.order.city,
+                  state: data.order.state,
+                  pincode: data.order.pincode,
+                },
+                items: data.order.items,
+                totalPrice: data.order.totalPrice,
+              });
+              setIsLoadingOrder(false);
+              return;
+            }
+          }
+        } catch (fetchErr) {
+          console.error("Failed to fetch full order details:", fetchErr);
+        }
+        setIsLoadingOrder(false);
+      }
+
+      fetchFullOrderDetails();
+    } else if (statusParam === "failed" && errorParam) {
+      if (!isConfirmedSuccessRef.current) {
+        hasProcessedRedirectRef.current = true;
+        setSubmitError(decodeURIComponent(errorParam));
+      }
+    }
+  }, []);
 
   const handleFieldChange = (field: keyof ShippingFormData, value: string) => {
     setShippingData((prev) => ({ ...prev, [field]: value }));
@@ -116,8 +224,11 @@ export default function CheckoutPage() {
   };
 
   /**
-   * Real Order Placement
-   * Sends validated shipping details & cart items to /api/orders for DB persistence.
+   * Razorpay Checkout Flow
+   * 1. Calls /api/payments/create-order with items & shipping details.
+   * 2. Opens Razorpay Hosted Checkout popup.
+   * 3. On payment success, calls /api/payments/verify.
+   * 4. Clears cart and renders OrderConfirmation.
    */
   const handlePlaceOrder = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -128,14 +239,8 @@ export default function CheckoutPage() {
     setSubmitError(null);
 
     const payload = {
-      fullName: shippingData.fullName,
-      email: shippingData.email,
-      phone: shippingData.phone,
-      addressLine1: shippingData.addressLine1,
-      addressLine2: shippingData.addressLine2 || undefined,
-      city: shippingData.city,
-      state: shippingData.state,
-      pincode: shippingData.pincode,
+      type: "SHOP_ORDER",
+      shippingData,
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -146,36 +251,163 @@ export default function CheckoutPage() {
     const snapshotShipping = { ...shippingData };
 
     try {
-      const res = await fetch("/api/orders", {
+      // 1. Create Razorpay order on server
+      const res = await fetch("/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const orderData = await res.json();
 
-      if (!res.ok) {
-        setSubmitError(data.error || "Failed to place order. Please try again.");
+      if (!res.ok || !orderData.success) {
+        setSubmitError(orderData.error || "Failed to initialize payment. Please try again.");
         setIsSubmitting(false);
         return;
       }
 
-      setSubmittedOrder({
-        orderId: data.orderNumber,
-        shippingDetails: snapshotShipping,
-        items: snapshotItems,
-        totalPrice: data.totalPrice ?? totalPrice,
+      setPendingOrderId(orderData.orderId);
+      setPendingOrderNumber(orderData.orderNumber);
+
+      // Dynamically import razorpay client helper
+      const { openRazorpayCheckout, pollPaymentStatus } = await import("@/lib/razorpay-client");
+
+      const handlePaymentSuccess = () => {
+        isConfirmedSuccessRef.current = true;
+        setSubmitError(null);
+        setSubmittedOrder({
+          orderId: orderData.orderNumber,
+          shippingDetails: snapshotShipping,
+          items: snapshotItems,
+          totalPrice: totalPrice,
+        });
+        clearCart();
+        setIsSubmitting(false);
+        setIsVerifying(false);
+        setIsSubmitted(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+
+      // 2. Open Razorpay Checkout Popup
+      await openRazorpayCheckout({
+        keyId: orderData.keyId,
+        orderId: orderData.orderId,
+        amount: orderData.amount,
+        title: "Vrikszon Occultaura",
+        description: `Order #${orderData.orderNumber}`,
+        prefill: {
+          name: shippingData.fullName,
+          email: shippingData.email,
+          contact: shippingData.phone,
+        },
+        onSuccess: async (response) => {
+          try {
+            setIsVerifying(true);
+            setVerificationMessage("Verifying cryptographic signature with payment gateway...");
+
+            // 3. Verify cryptographic signature on backend
+            const verifyRes = await fetch("/api/payments/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok && verifyData.success) {
+              handlePaymentSuccess();
+              return;
+            }
+
+            // Fallback status check if immediate signature response is delayed
+            const check = await pollPaymentStatus(orderData.orderId, 6, 1500, (attempt, max) => {
+              if (isConfirmedSuccessRef.current) return;
+              setVerificationMessage(`Confirming bank receipt (Attempt ${attempt}/${max})...`);
+            });
+
+            if (check.isPaid) {
+              handlePaymentSuccess();
+              return;
+            }
+
+            if (!isConfirmedSuccessRef.current) {
+              setIsVerifying(false);
+              setSubmitError(
+                verifyData.error || "Payment verification is pending bank confirmation. If debited, your order will confirm automatically."
+              );
+              setIsSubmitting(false);
+            }
+          } catch (verifyErr) {
+            console.error("Payment verification error:", verifyErr);
+            // Fallback check
+            const check = await pollPaymentStatus(orderData.orderId, 6, 1500);
+            if (check.isPaid) {
+              handlePaymentSuccess();
+              return;
+            }
+            if (!isConfirmedSuccessRef.current) {
+              setIsVerifying(false);
+              setSubmitError(
+                `Payment confirmation in progress with your bank. If amount was debited, your order #${orderData.orderNumber} will be processed automatically.`
+              );
+              setIsSubmitting(false);
+            }
+          }
+        },
+        onDismiss: async () => {
+          if (isConfirmedSuccessRef.current) return;
+          setIsVerifying(true);
+          setVerificationMessage("Waiting for confirmation from your bank or UPI app...");
+
+          // Poll for up to 30 seconds with progress updates
+          const check = await pollPaymentStatus(orderData.orderId, 15, 2000, (attempt, max) => {
+            if (isConfirmedSuccessRef.current) return;
+            setVerificationMessage(`Confirming payment with bank (Attempt ${attempt}/${max})...`);
+          });
+
+          if (isConfirmedSuccessRef.current) return;
+
+          if (check.isPaid) {
+            handlePaymentSuccess();
+            return;
+          }
+
+          if (!isConfirmedSuccessRef.current) {
+            setIsSubmitting(false);
+            setIsVerifying(false);
+            setSubmitError(
+              `Payment checkout was closed. If your bank account was debited, order #${orderData.orderNumber} will be confirmed automatically within a few minutes.`
+            );
+          }
+        },
+        onError: async (err) => {
+          if (isConfirmedSuccessRef.current) return;
+          console.error("Razorpay Popup Error:", err);
+          setIsVerifying(true);
+          setVerificationMessage("Checking if payment was completed before popup error...");
+
+          const check = await pollPaymentStatus(orderData.orderId, 6, 1500);
+          if (isConfirmedSuccessRef.current) return;
+
+          if (check.isPaid) {
+            handlePaymentSuccess();
+            return;
+          }
+
+          if (!isConfirmedSuccessRef.current) {
+            setIsSubmitting(false);
+            setIsVerifying(false);
+            setSubmitError("Unable to complete payment. Please check your internet connection or try another payment method.");
+          }
+        },
       });
-
-      clearCart();
-      setIsSubmitting(false);
-      setIsSubmitted(true);
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      console.error("Order submission network error:", err);
-      setSubmitError("Network connection error. Please check your connection and try again.");
-      setIsSubmitting(false);
+      console.error("Checkout order error:", err);
+      if (!isConfirmedSuccessRef.current) {
+        setSubmitError("Network connection error. Please check your connection and try again.");
+        setIsSubmitting(false);
+        setIsVerifying(false);
+      }
     }
   };
 
@@ -208,14 +440,14 @@ export default function CheckoutPage() {
               <li aria-hidden="true">
                 <ChevronRight className="h-3.5 w-3.5 text-navy-900/40" strokeWidth={1.75} />
               </li>
-              <li aria-current="page" className="font-medium text-navy-950">
-                Checkout
+              <li aria-current="page">
+                <span className="font-medium text-navy-950">Checkout</span>
               </li>
             </ol>
           </nav>
 
-          <h1 className="font-heading text-h2 font-medium text-navy-950 md:text-h1">
-            Checkout
+          <h1 className="font-heading text-h2 font-medium text-navy-950">
+            {isSubmitted ? "Order Confirmation" : "Checkout"}
           </h1>
         </div>
 
@@ -228,6 +460,7 @@ export default function CheckoutPage() {
               shippingDetails={submittedOrder.shippingDetails}
               items={submittedOrder.items}
               totalPrice={submittedOrder.totalPrice}
+              isLoading={isLoadingOrder}
             />
           </div>
         ) : items.length === 0 ? (
@@ -269,7 +502,16 @@ export default function CheckoutPage() {
                   errors={errors}
                   onChange={handleFieldChange}
                 />
-                <PaymentSection isSubmitting={isSubmitting} submitError={submitError} />
+                <PaymentSection
+                  isSubmitting={isSubmitting}
+                  submitError={submitError}
+                  totalPrice={totalPrice}
+                  isVerifying={isVerifying}
+                  verificationMessage={verificationMessage}
+                  pendingOrderId={pendingOrderId}
+                  pendingOrderNumber={pendingOrderNumber}
+                  onCheckStatusNow={handleCheckStatusNow}
+                />
               </div>
 
               {/* Right Column: Order Summary (Sticky on Desktop) */}

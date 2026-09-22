@@ -53,10 +53,13 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   Booking: 'Booking',
   ContactMessage: 'ContactMessage',
+  Category: 'Category',
+  Service: 'Service',
   Product: 'Product',
   Course: 'Course',
   Order: 'Order',
   OrderItem: 'OrderItem',
+  Payment: 'Payment',
   Testimonial: 'Testimonial',
   AdminUser: 'AdminUser'
 } as const
@@ -83,9 +86,13 @@ export const BookingScalarFieldEnum = {
   email: 'email',
   phone: 'phone',
   service: 'service',
+  amount: 'amount',
   preferredDate: 'preferredDate',
   message: 'message',
   status: 'status',
+  paymentStatus: 'paymentStatus',
+  razorpayOrderId: 'razorpayOrderId',
+  archived: 'archived',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -101,10 +108,46 @@ export const ContactMessageScalarFieldEnum = {
   reason: 'reason',
   message: 'message',
   isRead: 'isRead',
+  archived: 'archived',
   createdAt: 'createdAt'
 } as const
 
 export type ContactMessageScalarFieldEnum = (typeof ContactMessageScalarFieldEnum)[keyof typeof ContactMessageScalarFieldEnum]
+
+
+export const CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CategoryScalarFieldEnum = (typeof CategoryScalarFieldEnum)[keyof typeof CategoryScalarFieldEnum]
+
+
+export const ServiceScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  name: 'name',
+  category: 'category',
+  categoryId: 'categoryId',
+  shortDescription: 'shortDescription',
+  longDescription: 'longDescription',
+  price: 'price',
+  durationMinutes: 'durationMinutes',
+  image: 'image',
+  featured: 'featured',
+  enabled: 'enabled',
+  archived: 'archived',
+  displayOrder: 'displayOrder',
+  href: 'href',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ServiceScalarFieldEnum = (typeof ServiceScalarFieldEnum)[keyof typeof ServiceScalarFieldEnum]
 
 
 export const ProductScalarFieldEnum = {
@@ -112,6 +155,7 @@ export const ProductScalarFieldEnum = {
   slug: 'slug',
   name: 'name',
   category: 'category',
+  categoryId: 'categoryId',
   shortDescription: 'shortDescription',
   subtitle: 'subtitle',
   benefits: 'benefits',
@@ -120,6 +164,7 @@ export const ProductScalarFieldEnum = {
   icon: 'icon',
   featured: 'featured',
   enabled: 'enabled',
+  archived: 'archived',
   href: 'href',
   variantsNote: 'variantsNote',
   createdAt: 'createdAt',
@@ -134,6 +179,7 @@ export const CourseScalarFieldEnum = {
   slug: 'slug',
   title: 'title',
   category: 'category',
+  categoryId: 'categoryId',
   image: 'image',
   price: 'price',
   originalPrice: 'originalPrice',
@@ -161,6 +207,9 @@ export const OrderScalarFieldEnum = {
   totalPrice: 'totalPrice',
   status: 'status',
   paymentStatus: 'paymentStatus',
+  razorpayOrderId: 'razorpayOrderId',
+  razorpayPaymentId: 'razorpayPaymentId',
+  razorpaySignature: 'razorpaySignature',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -177,6 +226,30 @@ export const OrderItemScalarFieldEnum = {
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  razorpayOrderId: 'razorpayOrderId',
+  razorpayPaymentId: 'razorpayPaymentId',
+  razorpaySignature: 'razorpaySignature',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  type: 'type',
+  customerName: 'customerName',
+  customerEmail: 'customerEmail',
+  customerPhone: 'customerPhone',
+  orderId: 'orderId',
+  bookingId: 'bookingId',
+  courseId: 'courseId',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  paidAt: 'paidAt'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
 export const TestimonialScalarFieldEnum = {

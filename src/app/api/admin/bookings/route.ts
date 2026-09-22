@@ -87,7 +87,7 @@ export async function POST(request: Request) {
 }
 
 /**
- * PATCH /api/admin/bookings — Update booking status by id
+ * PATCH /api/admin/bookings — Update booking status or archived state by id
  */
 export async function PATCH(request: Request) {
   try {
@@ -114,12 +114,61 @@ export async function PATCH(request: Request) {
     const updated = await prisma.booking.update({
       where: { id: data.id },
       data: {
-        status: data.status,
+        ...(data.status !== undefined && { status: data.status }),
+        ...(data.archived !== undefined && { archived: data.archived }),
       },
     });
 
     return NextResponse.json(updated);
   } catch (error) {
-    return handleServerError(error, "PATCH /api/admin/bookings", "Failed to update booking status.");
+    return handleServerError(error, "PATCH /api/admin/bookings", "Failed to update booking.");
   }
 }
+
+/**
+ * DELETE /api/admin/bookings — Permanently delete booking by id
+ */
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    let id = url.searchParams.get("id");
+
+    if (!id) {
+      try {
+        const body = await request.json();
+        id = body?.id;
+      } catch {
+        // no body
+      }
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: "Booking ID is required" }, { status: 400 });
+    }
+
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id },
+    });
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    await prisma.booking.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Booking for ${existingBooking.name} deleted successfully`,
+    });
+  } catch (error) {
+    return handleServerError(error, "DELETE /api/admin/bookings", "Failed to delete booking.");
+  }
+}
+

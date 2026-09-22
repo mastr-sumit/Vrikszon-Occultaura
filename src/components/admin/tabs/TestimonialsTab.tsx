@@ -167,13 +167,13 @@ export function TestimonialsTab({
                       <div className="flex items-center gap-3">
                         <div className="relative h-12 w-10 shrink-0 rounded-lg overflow-hidden bg-navy-950 border border-navy-800 flex items-center justify-center text-gold-400">
                           {t.posterImage ? (
-                            <Image
-                              src={t.posterImage}
+                            <img
+                              src={t.posterImage.startsWith("http") || t.posterImage.startsWith("/") ? t.posterImage : `/${t.posterImage}`}
                               alt={t.clientName}
-                              width={40}
-                              height={48}
                               className="h-full w-full object-cover"
-                              unoptimized
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
                             />
                           ) : t.videoSrc ? (
                             <div className="flex flex-col items-center justify-center text-gold-400">

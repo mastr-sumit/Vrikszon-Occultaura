@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Loader2, Sparkles, AlertCircle } from "lucide-react";
+import { X, Loader2, Sparkles, AlertCircle, Plus, Check } from "lucide-react";
 import { FileUploadInput } from "../FileUploadInput";
 
 export interface AdminProduct {
@@ -17,6 +17,7 @@ export interface AdminProduct {
   icon: string;
   featured: boolean;
   enabled: boolean;
+  archived?: boolean;
   href: string | null;
   variantsNote?: string | null;
   createdAt: string | Date;
@@ -30,13 +31,15 @@ interface ProductModalProps {
   onSaved: (product: AdminProduct) => void;
 }
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   "Crystals & Gemstones",
   "Rudraksha Mala",
-  "Bracelets & Malas",
-  "Pyramids & Vastu",
-  "Yantras & Sacred Geometry",
-  "Spiritual Decor",
+  "Vastu Tools",
+  "Healing Bracelets",
+  "Zodiac Bracelets",
+  "Sacred Rakhi & Threads",
+  "Rudraksha",
+  "Numerology Bracelets",
 ];
 
 const ICONS = ["sparkles", "gem", "book", "triangle"];
@@ -49,10 +52,16 @@ export function ProductModal({
 }: ProductModalProps) {
   const isEdit = !!product;
 
+  const [categoriesList, setCategoriesList] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [categoryCreateError, setCategoryCreateError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     slug: "",
     name: "",
-    category: CATEGORIES[0],
+    category: DEFAULT_CATEGORIES[0],
     shortDescription: "",
     subtitle: "",
     benefitsText: "",
@@ -67,6 +76,31 @@ export function ProductModal({
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Fetch live product categories
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/admin/categories?type=PRODUCT");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const names = data.map((c: any) => c.name);
+            setCategoriesList(names);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch product categories:", err);
+      }
+    }
+
+    if (isOpen) {
+      loadCategories();
+      setIsAddingNewCategory(false);
+      setNewCategoryInput("");
+      setCategoryCreateError(null);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (product) {
@@ -89,7 +123,7 @@ export function ProductModal({
       setFormData({
         slug: "",
         name: "",
-        category: CATEGORIES[0],
+        category: categoriesList[0] || DEFAULT_CATEGORIES[0],
         shortDescription: "",
         subtitle: "",
         benefitsText: "",
@@ -103,7 +137,38 @@ export function ProductModal({
       });
     }
     setError(null);
+    setIsSubmitting(false);
   }, [product, isOpen]);
+
+  const handleQuickAddCategory = async () => {
+    const trimmed = newCategoryInput.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setCategoryCreateError("Category name must be at least 2 characters");
+      return;
+    }
+
+    setIsCreatingCategory(true);
+    setCategoryCreateError(null);
+
+    try {
+      const res = await fetch("/api/admin/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed, type: "PRODUCT" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create category");
+
+      setCategoriesList((prev) => (prev.includes(data.name) ? prev : [data.name, ...prev]));
+      setFormData((prev) => ({ ...prev, category: data.name }));
+      setIsAddingNewCategory(false);
+      setNewCategoryInput("");
+    } catch (err: any) {
+      setCategoryCreateError(err?.message || "Failed to create category");
+    } finally {
+      setIsCreatingCategory(false);
+    }
+  };
 
   // Auto-generate slug from name if slug is empty
   const handleNameChange = (name: string) => {
@@ -163,6 +228,8 @@ export function ProductModal({
     };
 
     setIsSubmitting(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
       const url = isEdit
@@ -175,21 +242,28 @@ export function ProductModal({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
         setError(data.error || "Failed to save product.");
-        setIsSubmitting(false);
         return;
       }
 
       onSaved(data);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("Save product error:", err);
-      setError("An unexpected network error occurred.");
+      if (err?.name === "AbortError") {
+        setError("Request timed out (15s). Please check connection and try again.");
+      } else {
+        setError(err?.message || "An unexpected network error occurred.");
+      }
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -259,20 +333,81 @@ export function ProductModal({
           {/* Category & Price */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-navy-200 mb-1">
-                Category
-              </label>
-              <select
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white focus:border-gold-400 focus:outline-none"
-              >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-navy-200">
+                  Category <span className="text-gold-400">*</span>
+                </label>
+                {!isAddingNewCategory && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAddingNewCategory(true);
+                      setNewCategoryInput("");
+                      setCategoryCreateError(null);
+                    }}
+                    className="text-[11px] text-gold-400 hover:text-gold-300 font-semibold flex items-center gap-1 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    + Add New Category
+                  </button>
+                )}
+              </div>
+
+              {isAddingNewCategory ? (
+                <div className="space-y-1.5 p-2 rounded-base border border-gold-500/30 bg-navy-950/80">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      autoFocus
+                      value={newCategoryInput}
+                      onChange={(e) => setNewCategoryInput(e.target.value)}
+                      placeholder="New category name..."
+                      className="flex-1 rounded border border-navy-700 bg-navy-900 px-2.5 py-1 text-xs text-white placeholder:text-gray-500 focus:border-gold-400 focus:outline-none"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleQuickAddCategory();
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      disabled={isCreatingCategory}
+                      onClick={handleQuickAddCategory}
+                      className="px-2.5 py-1 rounded bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold text-xs flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isCreatingCategory ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                      Add
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isCreatingCategory}
+                      onClick={() => setIsAddingNewCategory(false)}
+                      className="px-2 py-1 rounded bg-navy-800 hover:bg-navy-700 text-gray-300 text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {categoryCreateError && (
+                    <p className="text-[10px] text-rose-400">{categoryCreateError}</p>
+                  )}
+                </div>
+              ) : (
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white focus:border-gold-400 focus:outline-none"
+                >
+                  {categoriesList.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                  {formData.category && !categoriesList.includes(formData.category) && (
+                    <option value={formData.category}>{formData.category}</option>
+                  )}
+                </select>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-navy-200 mb-1">

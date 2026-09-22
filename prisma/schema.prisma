@@ -19,14 +19,21 @@ model Booking {
   email          String
   phone          String
   service        String // matches SERVICES id/name from src/data/services.ts
+  amount         Int?          // INR (fee)
   preferredDate  DateTime?
   message        String?
   status         BookingStatus @default(PENDING)
+  paymentStatus  PaymentStatus @default(UNPAID)
+  razorpayOrderId String?
+  archived       Boolean       @default(false)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+  payments       Payment[]
 
   @@index([status])
+  @@index([paymentStatus])
   @@index([email])
+  @@index([archived])
 }
 
 enum BookingStatus {
@@ -47,9 +54,66 @@ model ContactMessage {
   reason    String // subject/reason dropdown from ContactForm.tsx
   message   String
   isRead    Boolean   @default(false)
+  archived  Boolean   @default(false)
   createdAt DateTime  @default(now())
 
   @@index([isRead])
+  @@index([archived])
+}
+
+// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// Categories (for Products, Courses & Services)
+// ─────────────────────────────────────────────
+enum CategoryType {
+  PRODUCT
+  COURSE
+  SERVICE
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  type      CategoryType @default(PRODUCT)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  products  Product[]
+  courses   Course[]
+  services  Service[]
+
+  @@index([type])
+  @@index([slug])
+}
+
+// ─────────────────────────────────────────────
+// Services & Consultations (from /services, /book-consultation)
+// ─────────────────────────────────────────────
+model Service {
+  id               String       @id @default(cuid())
+  slug             String       @unique
+  name             String
+  category         String       @default("Numerology")
+  categoryId       String?
+  categoryRel      Category?    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  shortDescription String
+  longDescription  String?
+  price            Int?         // INR, null = price on request
+  durationMinutes  Int?         // in minutes (e.g. 45, 60)
+  image            String?
+  featured         Boolean      @default(false)
+  enabled          Boolean      @default(true)
+  archived         Boolean      @default(false)
+  displayOrder     Int          @default(0)
+  href             String?      @default("/services")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([archived])
+  @@index([enabled])
+  @@index([featured])
+  @@index([displayOrder])
+  @@index([categoryId])
 }
 
 // ─────────────────────────────────────────────
@@ -60,6 +124,8 @@ model Product {
   slug             String      @unique
   name             String
   category         String
+  categoryId       String?
+  categoryRel      Category?   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   shortDescription String
   subtitle         String?
   benefits         String?     // store as JSON-stringified array since SQLite has no native array type
@@ -68,48 +134,61 @@ model Product {
   icon             String      @default("sparkles")
   featured         Boolean     @default(false)
   enabled          Boolean     @default(true)
+  archived         Boolean     @default(false)
   href             String?
   variantsNote     String?
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   orderItems       OrderItem[]
+
+  @@index([archived])
+  @@index([categoryId])
 }
 
 // ─────────────────────────────────────────────
 // Academy / Courses (from /courses)
 // ─────────────────────────────────────────────
 model Course {
-  id               String   @id @default(cuid())
-  slug             String   @unique
+  id               String    @id @default(cuid())
+  slug             String    @unique
   title            String
   category         String?
+  categoryId       String?
+  categoryRel      Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
   image            String
   price            Int? // INR, null = price on request
   originalPrice    Int? // INR, null = no strike-through price
   shortDescription String
   enrollHref       String
-  enabled          Boolean  @default(true)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  enabled          Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  payments         Payment[]
+
+  @@index([categoryId])
 }
 
 model Order {
-  id              String      @id @default(cuid())
-  orderNumber     String      @unique // human-readable, e.g. VO-20260801-0001
-  fullName        String
-  email           String
-  phone           String
-  addressLine1    String
-  addressLine2    String?
-  city            String
-  state           String
-  pincode         String
-  totalPrice      Int // INR
-  status          OrderStatus @default(PENDING)
-  paymentStatus   PaymentStatus @default(UNPAID) // stays UNPAID until Razorpay phase
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  items           OrderItem[]
+  id                String        @id @default(cuid())
+  orderNumber       String        @unique // human-readable, e.g. VO-20260801-0001
+  fullName          String
+  email             String
+  phone             String
+  addressLine1      String
+  addressLine2      String?
+  city              String
+  state             String
+  pincode           String
+  totalPrice        Int // INR
+  status            OrderStatus   @default(PENDING)
+  paymentStatus     PaymentStatus @default(UNPAID)
+  razorpayOrderId   String?       @unique
+  razorpayPaymentId String?       @unique
+  razorpaySignature String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  items             OrderItem[]
+  payments          Payment[]
 }
 
 model OrderItem {
@@ -133,7 +212,62 @@ enum OrderStatus {
 enum PaymentStatus {
   UNPAID
   PAID
+  FAILED
   REFUNDED
+}
+
+// ─────────────────────────────────────────────
+// Razorpay Payment Records (Shop, Bookings, Courses)
+// ─────────────────────────────────────────────
+enum PaymentType {
+  SHOP_ORDER
+  CONSULTATION_BOOKING
+  COURSE_PURCHASE
+}
+
+enum PaymentRecordStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id                 String              @id @default(cuid())
+  razorpayOrderId    String              @unique
+  razorpayPaymentId  String?             @unique
+  razorpaySignature  String?
+  amount             Int                 // Amount in Paise (e.g. 50000 = ₹500.00)
+  currency           String              @default("INR")
+  status             PaymentRecordStatus @default(CREATED)
+  type               PaymentType
+  
+  customerName       String
+  customerEmail      String
+  customerPhone      String
+  
+  orderId            String?
+  order              Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  
+  bookingId          String?
+  booking            Booking?            @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  
+  courseId           String?
+  course             Course?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  
+  metadata           String?             // JSON string storing extra details (items, birth details, etc.)
+  
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  paidAt             DateTime?
+
+  @@index([razorpayOrderId])
+  @@index([status])
+  @@index([type])
+  @@index([customerEmail])
+  @@index([orderId])
+  @@index([bookingId])
+  @@index([courseId])
 }
 
 // ─────────────────────────────────────────────

@@ -6,15 +6,19 @@ import { AdminHeader } from "./AdminHeader";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { ProductsTab } from "./tabs/ProductsTab";
 import { CoursesTab } from "./tabs/CoursesTab";
+import { ServicesTab } from "./tabs/ServicesTab";
+import { CategoriesTab } from "./tabs/CategoriesTab";
 import { TestimonialsTab } from "./tabs/TestimonialsTab";
 import { BookingsTab, AdminBooking } from "./tabs/BookingsTab";
 import { OrdersTab, AdminOrder } from "./tabs/OrdersTab";
 import { MessagesTab, AdminMessage } from "./tabs/MessagesTab";
 import { AdminProduct, ProductModal } from "./modals/ProductModal";
 import { AdminCourse, CourseModal } from "./modals/CourseModal";
+import { AdminService, ServiceModal } from "./modals/ServiceModal";
 import { AdminTestimonial } from "./modals/TestimonialModal";
 
 interface AdminDashboardClientProps {
+  initialServices: AdminService[];
   initialProducts: AdminProduct[];
   initialCourses: AdminCourse[];
   initialTestimonials: AdminTestimonial[];
@@ -28,6 +32,7 @@ interface AdminDashboardClientProps {
 }
 
 export function AdminDashboardClient({
+  initialServices,
   initialProducts,
   initialCourses,
   initialTestimonials,
@@ -37,6 +42,7 @@ export function AdminDashboardClient({
   adminUser,
 }: AdminDashboardClientProps) {
   const [currentTab, setCurrentTab] = useState<AdminTab>("overview");
+  const [services, setServices] = useState<AdminService[]>(initialServices);
   const [products, setProducts] = useState<AdminProduct[]>(initialProducts);
   const [courses, setCourses] = useState<AdminCourse[]>(initialCourses);
   const [testimonials, setTestimonials] = useState<AdminTestimonial[]>(initialTestimonials);
@@ -49,11 +55,13 @@ export function AdminDashboardClient({
   // Quick modals from Overview
   const [isQuickProductModalOpen, setIsQuickProductModalOpen] = useState(false);
   const [isQuickCourseModalOpen, setIsQuickCourseModalOpen] = useState(false);
+  const [isQuickServiceModalOpen, setIsQuickServiceModalOpen] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const [prodRes, courseRes, testRes, bookRes, orderRes, msgRes] = await Promise.all([
+      const [servRes, prodRes, courseRes, testRes, bookRes, orderRes, msgRes] = await Promise.all([
+        fetch("/api/admin/services"),
         fetch("/api/admin/products"),
         fetch("/api/admin/courses"),
         fetch("/api/admin/testimonials"),
@@ -62,6 +70,7 @@ export function AdminDashboardClient({
         fetch("/api/admin/messages"),
       ]);
 
+      if (servRes.ok) setServices(await servRes.json());
       if (prodRes.ok) setProducts(await prodRes.json());
       if (courseRes.ok) setCourses(await courseRes.json());
       if (testRes.ok) setTestimonials(await testRes.json());
@@ -76,6 +85,7 @@ export function AdminDashboardClient({
   };
 
   const counts = {
+    services: services.filter((s) => !s.archived).length,
     products: products.length,
     courses: courses.length,
     testimonials: testimonials.length,
@@ -123,6 +133,13 @@ export function AdminDashboardClient({
               />
             )}
 
+            {currentTab === "services" && (
+              <ServicesTab
+                services={services}
+                onServicesUpdated={setServices}
+              />
+            )}
+
             {currentTab === "products" && (
               <ProductsTab
                 products={products}
@@ -135,6 +152,10 @@ export function AdminDashboardClient({
                 courses={courses}
                 onCoursesUpdated={setCourses}
               />
+            )}
+
+            {currentTab === "categories" && (
+              <CategoriesTab onRefreshParent={handleRefresh} />
             )}
 
             {currentTab === "testimonials" && (
@@ -182,6 +203,14 @@ export function AdminDashboardClient({
         course={null}
         onClose={() => setIsQuickCourseModalOpen(false)}
         onSaved={(newCourse) => setCourses((prev) => [newCourse, ...prev])}
+      />
+
+      {/* Quick Add Service Modal */}
+      <ServiceModal
+        isOpen={isQuickServiceModalOpen}
+        service={null}
+        onClose={() => setIsQuickServiceModalOpen(false)}
+        onSaved={(newServ) => setServices((prev) => [newServ, ...prev])}
       />
     </div>
   );

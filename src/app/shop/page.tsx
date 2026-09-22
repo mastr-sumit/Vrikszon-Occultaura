@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
 import { shopPageSections } from "@/data/shopPageSections";
+import { getPublicProducts } from "@/lib/db-public";
+import ShopGrid from "@/components/shop/ShopGrid";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
   title: "Shop | Vrikszon Occultaura",
@@ -10,18 +16,23 @@ export const metadata: Metadata = {
 /**
  * Shop Page
  *
- * Renders the configured, enabled Shop page sections in order — see
- * src/data/shopPageSections.ts to enable/disable, reorder, or add a
- * section. Follows the same config-driven architecture as /about, /contact, and /services.
+ * Server Component with live DB data fetching — guarantees immediate
+ * reflection of Admin Panel updates for Products.
  */
-export default function ShopPage() {
+export default async function ShopPage() {
+  const products = await getPublicProducts();
+
   return (
     <main>
       {shopPageSections
         .filter((section) => section.enabled)
-        .map(({ id, component: Section }) => (
-          <Section key={id} />
-        ))}
+        .map(({ id, component: Section }) => {
+          if (id === "shop-grid") {
+            return <ShopGrid key={id} initialProducts={products} />;
+          }
+          return <Section key={id} />;
+        })}
     </main>
   );
 }
+

@@ -32,6 +32,7 @@ export type ContactMessageMinAggregateOutputType = {
   reason: string | null
   message: string | null
   isRead: boolean | null
+  archived: boolean | null
   createdAt: Date | null
 }
 
@@ -43,6 +44,7 @@ export type ContactMessageMaxAggregateOutputType = {
   reason: string | null
   message: string | null
   isRead: boolean | null
+  archived: boolean | null
   createdAt: Date | null
 }
 
@@ -54,6 +56,7 @@ export type ContactMessageCountAggregateOutputType = {
   reason: number
   message: number
   isRead: number
+  archived: number
   createdAt: number
   _all: number
 }
@@ -67,6 +70,7 @@ export type ContactMessageMinAggregateInputType = {
   reason?: true
   message?: true
   isRead?: true
+  archived?: true
   createdAt?: true
 }
 
@@ -78,6 +82,7 @@ export type ContactMessageMaxAggregateInputType = {
   reason?: true
   message?: true
   isRead?: true
+  archived?: true
   createdAt?: true
 }
 
@@ -89,6 +94,7 @@ export type ContactMessageCountAggregateInputType = {
   reason?: true
   message?: true
   isRead?: true
+  archived?: true
   createdAt?: true
   _all?: true
 }
@@ -173,6 +179,7 @@ export type ContactMessageGroupByOutputType = {
   reason: string
   message: string
   isRead: boolean
+  archived: boolean
   createdAt: Date
   _count: ContactMessageCountAggregateOutputType | null
   _min: ContactMessageMinAggregateOutputType | null
@@ -205,6 +212,7 @@ export type ContactMessageWhereInput = {
   reason?: Prisma.StringFilter<"ContactMessage"> | string
   message?: Prisma.StringFilter<"ContactMessage"> | string
   isRead?: Prisma.BoolFilter<"ContactMessage"> | boolean
+  archived?: Prisma.BoolFilter<"ContactMessage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ContactMessage"> | Date | string
 }
 
@@ -216,6 +224,7 @@ export type ContactMessageOrderByWithRelationInput = {
   reason?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -230,6 +239,7 @@ export type ContactMessageWhereUniqueInput = Prisma.AtLeast<{
   reason?: Prisma.StringFilter<"ContactMessage"> | string
   message?: Prisma.StringFilter<"ContactMessage"> | string
   isRead?: Prisma.BoolFilter<"ContactMessage"> | boolean
+  archived?: Prisma.BoolFilter<"ContactMessage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ContactMessage"> | Date | string
 }, "id">
 
@@ -241,6 +251,7 @@ export type ContactMessageOrderByWithAggregationInput = {
   reason?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.ContactMessageCountOrderByAggregateInput
   _max?: Prisma.ContactMessageMaxOrderByAggregateInput
@@ -258,6 +269,7 @@ export type ContactMessageScalarWhereWithAggregatesInput = {
   reason?: Prisma.StringWithAggregatesFilter<"ContactMessage"> | string
   message?: Prisma.StringWithAggregatesFilter<"ContactMessage"> | string
   isRead?: Prisma.BoolWithAggregatesFilter<"ContactMessage"> | boolean
+  archived?: Prisma.BoolWithAggregatesFilter<"ContactMessage"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ContactMessage"> | Date | string
 }
 
@@ -269,6 +281,7 @@ export type ContactMessageCreateInput = {
   reason: string
   message: string
   isRead?: boolean
+  archived?: boolean
   createdAt?: Date | string
 }
 
@@ -280,6 +293,7 @@ export type ContactMessageUncheckedCreateInput = {
   reason: string
   message: string
   isRead?: boolean
+  archived?: boolean
   createdAt?: Date | string
 }
 
@@ -291,6 +305,7 @@ export type ContactMessageUpdateInput = {
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -302,6 +317,7 @@ export type ContactMessageUncheckedUpdateInput = {
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -313,6 +329,7 @@ export type ContactMessageCreateManyInput = {
   reason: string
   message: string
   isRead?: boolean
+  archived?: boolean
   createdAt?: Date | string
 }
 
@@ -324,6 +341,7 @@ export type ContactMessageUpdateManyMutationInput = {
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -335,6 +353,7 @@ export type ContactMessageUncheckedUpdateManyInput = {
   reason?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.StringFieldUpdateOperationsInput | string
   isRead?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  archived?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -346,6 +365,7 @@ export type ContactMessageCountOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -357,6 +377,7 @@ export type ContactMessageMaxOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -368,11 +389,8 @@ export type ContactMessageMinOrderByAggregateInput = {
   reason?: Prisma.SortOrder
   message?: Prisma.SortOrder
   isRead?: Prisma.SortOrder
+  archived?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
 }
 
 
@@ -385,6 +403,7 @@ export type ContactMessageSelect<ExtArgs extends runtime.Types.Extensions.Intern
   reason?: boolean
   message?: boolean
   isRead?: boolean
+  archived?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["contactMessage"]>
 
@@ -396,6 +415,7 @@ export type ContactMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   reason?: boolean
   message?: boolean
   isRead?: boolean
+  archived?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["contactMessage"]>
 
@@ -407,6 +427,7 @@ export type ContactMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   reason?: boolean
   message?: boolean
   isRead?: boolean
+  archived?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["contactMessage"]>
 
@@ -418,10 +439,11 @@ export type ContactMessageSelectScalar = {
   reason?: boolean
   message?: boolean
   isRead?: boolean
+  archived?: boolean
   createdAt?: boolean
 }
 
-export type ContactMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "reason" | "message" | "isRead" | "createdAt", ExtArgs["result"]["contactMessage"]>
+export type ContactMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "reason" | "message" | "isRead" | "archived" | "createdAt", ExtArgs["result"]["contactMessage"]>
 
 export type $ContactMessagePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "ContactMessage"
@@ -434,6 +456,7 @@ export type $ContactMessagePayload<ExtArgs extends runtime.Types.Extensions.Inte
     reason: string
     message: string
     isRead: boolean
+    archived: boolean
     createdAt: Date
   }, ExtArgs["result"]["contactMessage"]>
   composites: {}
@@ -865,6 +888,7 @@ export interface ContactMessageFieldRefs {
   readonly reason: Prisma.FieldRef<"ContactMessage", 'String'>
   readonly message: Prisma.FieldRef<"ContactMessage", 'String'>
   readonly isRead: Prisma.FieldRef<"ContactMessage", 'Boolean'>
+  readonly archived: Prisma.FieldRef<"ContactMessage", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ContactMessage", 'DateTime'>
 }
     

@@ -71,11 +71,33 @@ function BookingSectionContent() {
   const serviceId = useId();
   const dateId = useId();
   const messageId = useId();
+  const [servicesList, setServicesList] = useState(SERVICES);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadServices() {
+      try {
+        const res = await fetch("/api/services", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data) && data.length > 0) {
+            setServicesList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load services in homepage booking dropdown:", err);
+      }
+    }
+    loadServices();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const serviceOptions: SelectOption[] = [
     { value: "course-enrollment", label: "🎓 Course Enrollment / Academy Masterclass" },
     { value: "report-request", label: "📄 Personalized Numerology & Vastu Report Request" },
-    ...SERVICES.filter((service) => service.enabled).map((service) => ({
+    ...servicesList.filter((service) => service.enabled).map((service) => ({
       value: service.id,
       label: service.name,
     })),
@@ -236,10 +258,14 @@ function BookingSectionContent() {
           {/* Left ~40% — intro, opening hours, verified location */}
           <div className="flex flex-col gap-8">
             <motion.div {...fadeUp(0)} className="flex flex-col gap-6">
-              <span className="text-small font-semibold uppercase tracking-[0.08em] text-gold-500">
-                Book a Consultation
-              </span>
-              <h2 className="font-heading text-h3 font-medium text-white md:text-h2">
+              <div className="flex items-center gap-2.5">
+                <span className="h-0.5 w-8 bg-gold-400/80" />
+                <span className="text-sm sm:text-base md:text-lg font-bold uppercase tracking-[0.2em] text-gold-400">
+                  Book a Consultation
+                </span>
+                <span className="h-0.5 w-8 bg-gold-400/80" />
+              </div>
+              <h2 className="font-heading text-h2 sm:text-h1 md:text-hero text-[28px] sm:text-[36px] md:text-[44px] lg:text-[50px] font-semibold text-white tracking-tight leading-[1.18]">
                 Take the First Step Toward Greater Clarity
               </h2>
               <p className="max-w-narrow text-body-lg text-white/70">
