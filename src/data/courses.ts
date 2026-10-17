@@ -3,6 +3,17 @@
  * Professional certifications in Numerology, Vastu Shastra, and Occult Sciences.
  */
 
+export type CourseMode = "recorded" | "live";
+
+export interface CourseModePricing {
+  price: number | null;
+  originalPrice?: number | null;
+}
+
+export interface CourseLiveModePricing extends CourseModePricing {
+  nextBatch?: string;
+}
+
 export interface CourseCategory {
   id: string;
   name: string;
@@ -18,6 +29,10 @@ export interface Course {
   categoryId?: string;
   categorySlug?: string;
   image: string;
+  // Two purchase modes: recorded and live
+  recorded: CourseModePricing;
+  live: CourseLiveModePricing;
+  // Legacy price & originalPrice fields preserved for backward compatibility
   price: number | null;
   originalPrice?: number | null;
   shortDescription: string;
@@ -32,6 +47,16 @@ export const COURSES: Course[] = [
     title: "Mobile Numerology",
     category: "Numerology",
     image: "/images/services/mobile-numerology-course.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 1st of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -45,6 +70,16 @@ export const COURSES: Course[] = [
     title: "Loshu Grid Mastery",
     category: "Numerology",
     image: "/images/services/loshu-grid-mastery-course.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 5th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -58,6 +93,16 @@ export const COURSES: Course[] = [
     title: "Name Numerology Mastery",
     category: "Numerology",
     image: "/images/services/name-numerology-mastery-course.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 10th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -71,6 +116,16 @@ export const COURSES: Course[] = [
     title: "Astrology Courses",
     category: "Astrology",
     image: "/images/services/astrology-courses.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 12th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -84,6 +139,16 @@ export const COURSES: Course[] = [
     title: "Rudraksha Premium Course",
     category: "Remedies",
     image: "/images/services/rudraksha-premium-course.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 15th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -97,6 +162,16 @@ export const COURSES: Course[] = [
     title: "Advance Vedic Switchword",
     category: "Switchword",
     image: "/images/services/advance-vedic-switchword.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 18th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -110,6 +185,16 @@ export const COURSES: Course[] = [
     title: "Western Switchword",
     category: "Switchword",
     image: "/images/services/western-switchword.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 20th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -123,6 +208,16 @@ export const COURSES: Course[] = [
     title: "Pronology",
     category: "Numerology",
     image: "/images/services/pronology-course.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 22nd of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -136,6 +231,16 @@ export const COURSES: Course[] = [
     title: "Numero Yantra",
     category: "Numerology",
     image: "/images/services/numero-yantra-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 25th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -149,6 +254,16 @@ export const COURSES: Course[] = [
     title: "Watch Analysis",
     category: "Numerology",
     image: "/images/services/watch-analysis-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 28th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -162,6 +277,16 @@ export const COURSES: Course[] = [
     title: "Golden Tree",
     category: "Remedies",
     image: "/images/services/golden-tree-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 1st of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -175,6 +300,16 @@ export const COURSES: Course[] = [
     title: "Lal Kitab",
     category: "Astrology",
     image: "/images/services/lal-kitab-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 5th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -188,6 +323,16 @@ export const COURSES: Course[] = [
     title: "Angel Invoking",
     category: "Switchword",
     image: "/images/services/angel-invoking-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 8th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -201,6 +346,16 @@ export const COURSES: Course[] = [
     title: "Crystal Course",
     category: "Remedies",
     image: "/images/services/crystal-course.png",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 12th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -215,6 +370,16 @@ export const COURSES: Course[] = [
     category: "Vastu",
     categorySlug: "course-vastu",
     image: "/images/courses/basic-vastu.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 15th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -229,6 +394,16 @@ export const COURSES: Course[] = [
     category: "Vastu",
     categorySlug: "course-vastu",
     image: "/images/courses/advance-vastu.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 18th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -243,6 +418,16 @@ export const COURSES: Course[] = [
     category: "Vastu",
     categorySlug: "course-vastu",
     image: "/images/courses/devta-vastu.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 20th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -257,6 +442,16 @@ export const COURSES: Course[] = [
     category: "Vastu",
     categorySlug: "course-vastu",
     image: "/images/courses/dev-urja-vastu.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 22nd of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -271,6 +466,16 @@ export const COURSES: Course[] = [
     category: "Astrology",
     categorySlug: "course-astrology",
     image: "/images/courses/panch-pakshi.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 25th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -285,6 +490,16 @@ export const COURSES: Course[] = [
     category: "Remedies",
     categorySlug: "course-remedies",
     image: "/images/courses/spice-remedies.jpg",
+    recorded: {
+      price: null,
+      originalPrice: null,
+    },
+    // TODO: Update real live course price and next batch schedule
+    live: {
+      price: null,
+      originalPrice: null,
+      nextBatch: "Upcoming Batch: Starts 28th of Next Month",
+    },
     price: null,
     originalPrice: null,
     shortDescription:
@@ -294,8 +509,8 @@ export const COURSES: Course[] = [
   },
 ];
 
-export const formatCoursePrice = (price: number | null): string => {
-  if (price === null) return "Price on request";
+export const formatCoursePrice = (price: number | null | undefined): string => {
+  if (price === null || price === undefined) return "Price on request";
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",

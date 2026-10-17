@@ -29,11 +29,15 @@ export type AggregateCourse = {
 export type CourseAvgAggregateOutputType = {
   price: number | null
   originalPrice: number | null
+  livePrice: number | null
+  liveOriginalPrice: number | null
 }
 
 export type CourseSumAggregateOutputType = {
   price: number | null
   originalPrice: number | null
+  livePrice: number | null
+  liveOriginalPrice: number | null
 }
 
 export type CourseMinAggregateOutputType = {
@@ -45,6 +49,9 @@ export type CourseMinAggregateOutputType = {
   image: string | null
   price: number | null
   originalPrice: number | null
+  livePrice: number | null
+  liveOriginalPrice: number | null
+  nextBatch: string | null
   shortDescription: string | null
   enrollHref: string | null
   enabled: boolean | null
@@ -61,6 +68,9 @@ export type CourseMaxAggregateOutputType = {
   image: string | null
   price: number | null
   originalPrice: number | null
+  livePrice: number | null
+  liveOriginalPrice: number | null
+  nextBatch: string | null
   shortDescription: string | null
   enrollHref: string | null
   enabled: boolean | null
@@ -77,6 +87,9 @@ export type CourseCountAggregateOutputType = {
   image: number
   price: number
   originalPrice: number
+  livePrice: number
+  liveOriginalPrice: number
+  nextBatch: number
   shortDescription: number
   enrollHref: number
   enabled: number
@@ -89,11 +102,15 @@ export type CourseCountAggregateOutputType = {
 export type CourseAvgAggregateInputType = {
   price?: true
   originalPrice?: true
+  livePrice?: true
+  liveOriginalPrice?: true
 }
 
 export type CourseSumAggregateInputType = {
   price?: true
   originalPrice?: true
+  livePrice?: true
+  liveOriginalPrice?: true
 }
 
 export type CourseMinAggregateInputType = {
@@ -105,6 +122,9 @@ export type CourseMinAggregateInputType = {
   image?: true
   price?: true
   originalPrice?: true
+  livePrice?: true
+  liveOriginalPrice?: true
+  nextBatch?: true
   shortDescription?: true
   enrollHref?: true
   enabled?: true
@@ -121,6 +141,9 @@ export type CourseMaxAggregateInputType = {
   image?: true
   price?: true
   originalPrice?: true
+  livePrice?: true
+  liveOriginalPrice?: true
+  nextBatch?: true
   shortDescription?: true
   enrollHref?: true
   enabled?: true
@@ -137,6 +160,9 @@ export type CourseCountAggregateInputType = {
   image?: true
   price?: true
   originalPrice?: true
+  livePrice?: true
+  liveOriginalPrice?: true
+  nextBatch?: true
   shortDescription?: true
   enrollHref?: true
   enabled?: true
@@ -240,6 +266,9 @@ export type CourseGroupByOutputType = {
   image: string
   price: number | null
   originalPrice: number | null
+  livePrice: number | null
+  liveOriginalPrice: number | null
+  nextBatch: string | null
   shortDescription: string
   enrollHref: string
   enabled: boolean
@@ -279,6 +308,9 @@ export type CourseWhereInput = {
   image?: Prisma.StringFilter<"Course"> | string
   price?: Prisma.IntNullableFilter<"Course"> | number | null
   originalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  livePrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  liveOriginalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  nextBatch?: Prisma.StringNullableFilter<"Course"> | string | null
   shortDescription?: Prisma.StringFilter<"Course"> | string
   enrollHref?: Prisma.StringFilter<"Course"> | string
   enabled?: Prisma.BoolFilter<"Course"> | boolean
@@ -297,6 +329,9 @@ export type CourseOrderByWithRelationInput = {
   image?: Prisma.SortOrder
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   originalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  livePrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextBatch?: Prisma.SortOrderInput | Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   enrollHref?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -318,6 +353,9 @@ export type CourseWhereUniqueInput = Prisma.AtLeast<{
   image?: Prisma.StringFilter<"Course"> | string
   price?: Prisma.IntNullableFilter<"Course"> | number | null
   originalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  livePrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  liveOriginalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  nextBatch?: Prisma.StringNullableFilter<"Course"> | string | null
   shortDescription?: Prisma.StringFilter<"Course"> | string
   enrollHref?: Prisma.StringFilter<"Course"> | string
   enabled?: Prisma.BoolFilter<"Course"> | boolean
@@ -336,6 +374,9 @@ export type CourseOrderByWithAggregationInput = {
   image?: Prisma.SortOrder
   price?: Prisma.SortOrderInput | Prisma.SortOrder
   originalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  livePrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrderInput | Prisma.SortOrder
+  nextBatch?: Prisma.SortOrderInput | Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   enrollHref?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -360,6 +401,9 @@ export type CourseScalarWhereWithAggregatesInput = {
   image?: Prisma.StringWithAggregatesFilter<"Course"> | string
   price?: Prisma.IntNullableWithAggregatesFilter<"Course"> | number | null
   originalPrice?: Prisma.IntNullableWithAggregatesFilter<"Course"> | number | null
+  livePrice?: Prisma.IntNullableWithAggregatesFilter<"Course"> | number | null
+  liveOriginalPrice?: Prisma.IntNullableWithAggregatesFilter<"Course"> | number | null
+  nextBatch?: Prisma.StringNullableWithAggregatesFilter<"Course"> | string | null
   shortDescription?: Prisma.StringWithAggregatesFilter<"Course"> | string
   enrollHref?: Prisma.StringWithAggregatesFilter<"Course"> | string
   enabled?: Prisma.BoolWithAggregatesFilter<"Course"> | boolean
@@ -375,6 +419,9 @@ export type CourseCreateInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -393,6 +440,9 @@ export type CourseUncheckedCreateInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -409,6 +459,9 @@ export type CourseUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -427,6 +480,9 @@ export type CourseUncheckedUpdateInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -444,6 +500,9 @@ export type CourseCreateManyInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -459,6 +518,9 @@ export type CourseUpdateManyMutationInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -475,6 +537,9 @@ export type CourseUncheckedUpdateManyInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -501,6 +566,9 @@ export type CourseCountOrderByAggregateInput = {
   image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
+  livePrice?: Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrder
+  nextBatch?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   enrollHref?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -511,6 +579,8 @@ export type CourseCountOrderByAggregateInput = {
 export type CourseAvgOrderByAggregateInput = {
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
+  livePrice?: Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrder
 }
 
 export type CourseMaxOrderByAggregateInput = {
@@ -522,6 +592,9 @@ export type CourseMaxOrderByAggregateInput = {
   image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
+  livePrice?: Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrder
+  nextBatch?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   enrollHref?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -538,6 +611,9 @@ export type CourseMinOrderByAggregateInput = {
   image?: Prisma.SortOrder
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
+  livePrice?: Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrder
+  nextBatch?: Prisma.SortOrder
   shortDescription?: Prisma.SortOrder
   enrollHref?: Prisma.SortOrder
   enabled?: Prisma.SortOrder
@@ -548,6 +624,8 @@ export type CourseMinOrderByAggregateInput = {
 export type CourseSumOrderByAggregateInput = {
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
+  livePrice?: Prisma.SortOrder
+  liveOriginalPrice?: Prisma.SortOrder
 }
 
 export type CourseNullableScalarRelationFilter = {
@@ -621,6 +699,9 @@ export type CourseCreateWithoutCategoryRelInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -637,6 +718,9 @@ export type CourseUncheckedCreateWithoutCategoryRelInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -683,6 +767,9 @@ export type CourseScalarWhereInput = {
   image?: Prisma.StringFilter<"Course"> | string
   price?: Prisma.IntNullableFilter<"Course"> | number | null
   originalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  livePrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  liveOriginalPrice?: Prisma.IntNullableFilter<"Course"> | number | null
+  nextBatch?: Prisma.StringNullableFilter<"Course"> | string | null
   shortDescription?: Prisma.StringFilter<"Course"> | string
   enrollHref?: Prisma.StringFilter<"Course"> | string
   enabled?: Prisma.BoolFilter<"Course"> | boolean
@@ -698,6 +785,9 @@ export type CourseCreateWithoutPaymentsInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -715,6 +805,9 @@ export type CourseUncheckedCreateWithoutPaymentsInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -746,6 +839,9 @@ export type CourseUpdateWithoutPaymentsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -763,6 +859,9 @@ export type CourseUncheckedUpdateWithoutPaymentsInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -778,6 +877,9 @@ export type CourseCreateManyCategoryRelInput = {
   image: string
   price?: number | null
   originalPrice?: number | null
+  livePrice?: number | null
+  liveOriginalPrice?: number | null
+  nextBatch?: string | null
   shortDescription: string
   enrollHref: string
   enabled?: boolean
@@ -793,6 +895,9 @@ export type CourseUpdateWithoutCategoryRelInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -809,6 +914,9 @@ export type CourseUncheckedUpdateWithoutCategoryRelInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -825,6 +933,9 @@ export type CourseUncheckedUpdateManyWithoutCategoryRelInput = {
   image?: Prisma.StringFieldUpdateOperationsInput | string
   price?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   originalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  livePrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  liveOriginalPrice?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  nextBatch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shortDescription?: Prisma.StringFieldUpdateOperationsInput | string
   enrollHref?: Prisma.StringFieldUpdateOperationsInput | string
   enabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -872,6 +983,9 @@ export type CourseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   image?: boolean
   price?: boolean
   originalPrice?: boolean
+  livePrice?: boolean
+  liveOriginalPrice?: boolean
+  nextBatch?: boolean
   shortDescription?: boolean
   enrollHref?: boolean
   enabled?: boolean
@@ -891,6 +1005,9 @@ export type CourseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   image?: boolean
   price?: boolean
   originalPrice?: boolean
+  livePrice?: boolean
+  liveOriginalPrice?: boolean
+  nextBatch?: boolean
   shortDescription?: boolean
   enrollHref?: boolean
   enabled?: boolean
@@ -908,6 +1025,9 @@ export type CourseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   image?: boolean
   price?: boolean
   originalPrice?: boolean
+  livePrice?: boolean
+  liveOriginalPrice?: boolean
+  nextBatch?: boolean
   shortDescription?: boolean
   enrollHref?: boolean
   enabled?: boolean
@@ -925,6 +1045,9 @@ export type CourseSelectScalar = {
   image?: boolean
   price?: boolean
   originalPrice?: boolean
+  livePrice?: boolean
+  liveOriginalPrice?: boolean
+  nextBatch?: boolean
   shortDescription?: boolean
   enrollHref?: boolean
   enabled?: boolean
@@ -932,7 +1055,7 @@ export type CourseSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "category" | "categoryId" | "image" | "price" | "originalPrice" | "shortDescription" | "enrollHref" | "enabled" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
+export type CourseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "category" | "categoryId" | "image" | "price" | "originalPrice" | "livePrice" | "liveOriginalPrice" | "nextBatch" | "shortDescription" | "enrollHref" | "enabled" | "createdAt" | "updatedAt", ExtArgs["result"]["course"]>
 export type CourseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   categoryRel?: boolean | Prisma.Course$categoryRelArgs<ExtArgs>
   payments?: boolean | Prisma.Course$paymentsArgs<ExtArgs>
@@ -960,6 +1083,9 @@ export type $CoursePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     image: string
     price: number | null
     originalPrice: number | null
+    livePrice: number | null
+    liveOriginalPrice: number | null
+    nextBatch: string | null
     shortDescription: string
     enrollHref: string
     enabled: boolean
@@ -1398,6 +1524,9 @@ export interface CourseFieldRefs {
   readonly image: Prisma.FieldRef<"Course", 'String'>
   readonly price: Prisma.FieldRef<"Course", 'Int'>
   readonly originalPrice: Prisma.FieldRef<"Course", 'Int'>
+  readonly livePrice: Prisma.FieldRef<"Course", 'Int'>
+  readonly liveOriginalPrice: Prisma.FieldRef<"Course", 'Int'>
+  readonly nextBatch: Prisma.FieldRef<"Course", 'String'>
   readonly shortDescription: Prisma.FieldRef<"Course", 'String'>
   readonly enrollHref: Prisma.FieldRef<"Course", 'String'>
   readonly enabled: Prisma.FieldRef<"Course", 'Boolean'>

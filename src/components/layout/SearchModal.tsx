@@ -122,7 +122,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         title: course.title,
         category: course.category || "Courses",
         description: course.shortDescription,
-        price: course.price,
+        price: course.recorded?.price ?? course.price,
         href: `/courses#${course.slug}`,
       });
     });

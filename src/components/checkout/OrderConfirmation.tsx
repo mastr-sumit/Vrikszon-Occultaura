@@ -180,12 +180,13 @@ export default function OrderConfirmation({
             </div>
           ) : (
             <ul className="divide-y divide-navy-900/10 max-h-72 overflow-y-auto pr-2" role="list">
-              {items.map(({ product, quantity }) => {
+              {items.map(({ product, quantity, mode }) => {
                 const imageSrc = product.image || (product.slug ? `/images/products/${product.slug}.jpg` : "/images/placeholder-product.jpg");
                 const lineTotal = (product.price ?? 0) * quantity;
+                const displayName = mode ? `${product.name}, ${mode === "live" ? "Live" : "Recorded"}` : product.name;
 
                 return (
-                  <li key={product.id || product.slug} className="flex items-center gap-4 py-3">
+                  <li key={`${product.id || product.slug}-${mode || "std"}`} className="flex items-center gap-4 py-3">
                     <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-navy-900/10 bg-navy-50">
                       <Image
                         src={imageSrc}
@@ -199,9 +200,16 @@ export default function OrderConfirmation({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-heading text-body-sm font-medium text-navy-950 truncate">
-                        {product.name}
-                      </h3>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h3 className="font-heading text-body-sm font-medium text-navy-950 truncate">
+                          {displayName}
+                        </h3>
+                        {mode && (
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${mode === "live" ? "bg-emerald-100 text-emerald-800" : "bg-navy-100 text-navy-800"}`}>
+                            {mode === "live" ? "Live" : "Recorded"}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-caption text-navy-900/60">
                         Qty: {quantity} × {formatProductPrice(product.price)}
                       </p>

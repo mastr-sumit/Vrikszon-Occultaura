@@ -116,12 +116,13 @@ export async function POST(request: Request) {
           paymentStatus: "UNPAID",
           razorpayOrderId: rzpOrder.id,
           items: {
-            create: items.map((item: { productId: string; quantity: number }) => {
+            create: items.map((item: { productId: string; quantity: number; mode?: string }) => {
               const prod = productMap.get(item.productId)!;
               return {
                 productId: prod.id,
                 quantity: item.quantity,
                 price: prod.price ?? 0,
+                purchaseMode: item.mode || null,
               };
             }),
           },
@@ -265,7 +266,7 @@ export async function POST(request: Request) {
     // 3. COURSE PURCHASE / ENROLLMENT
     // ─────────────────────────────────────────────
     if (type === "COURSE_PURCHASE") {
-      const { courseId, courseSlug, studentData } = body;
+      const { courseId, courseSlug, mode = "recorded", studentData } = body;
 
       if (!studentData || !studentData.name || !studentData.email || !studentData.phone) {
         return NextResponse.json(
@@ -290,7 +291,13 @@ export async function POST(request: Request) {
         );
       }
 
-      const priceInRupees = course.price && course.price > 0 ? course.price : 2100;
+      const selectedMode: "recorded" | "live" = mode === "live" ? "live" : "recorded";
+      const courseAny = course as typeof course & { livePrice?: number | null };
+      const modePrice = selectedMode === "live"
+        ? (courseAny.livePrice ?? course.price)
+        : course.price;
+
+      const priceInRupees = modePrice && modePrice > 0 ? modePrice : 2100;
       const amountInPaise = priceInRupees * 100;
 
       const receipt = `CR-${course.slug.slice(0, 8)}-${Date.now().toString().slice(-4)}`;
@@ -303,6 +310,7 @@ export async function POST(request: Request) {
           courseId: course.id,
           courseSlug: course.slug,
           courseTitle: course.title,
+          courseMode: selectedMode,
           customerEmail: studentData.email,
           customerPhone: studentData.phone,
           orderType: "COURSE_PURCHASE",
@@ -320,7 +328,12 @@ export async function POST(request: Request) {
           customerEmail: studentData.email,
           customerPhone: studentData.phone,
           courseId: course.id,
-          metadata: JSON.stringify({ courseTitle: course.title, courseSlug: course.slug }),
+          purchaseMode: selectedMode,
+          metadata: JSON.stringify({
+            courseTitle: course.title,
+            courseSlug: course.slug,
+            mode: selectedMode,
+          }),
         },
       });
 
@@ -331,6 +344,7 @@ export async function POST(request: Request) {
         currency: "INR",
         keyId,
         courseTitle: course.title,
+        mode: selectedMode,
       });
     }
 

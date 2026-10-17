@@ -244,6 +244,7 @@ export default function CheckoutPage() {
       items: items.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
+        mode: item.mode,
       })),
     };
 

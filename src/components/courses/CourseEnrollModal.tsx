@@ -1,21 +1,28 @@
 "use client";
 
-import { useState } from "react";
-import { X, CheckCircle2, Lock, ShieldCheck, Sparkles, BookOpen, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, CheckCircle2, Lock, ShieldCheck, Sparkles, BookOpen, AlertCircle, Video, Calendar, ShoppingBag } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { type Course, formatCoursePrice } from "@/data/courses";
+import { cn } from "@/lib/utils";
+import { type Course, type CourseMode, formatCoursePrice } from "@/data/courses";
+import { useCart } from "@/context/CartContext";
 
 interface CourseEnrollModalProps {
   course: Course;
+  mode?: CourseMode;
   isOpen: boolean;
   onClose: () => void;
 }
 
 export default function CourseEnrollModal({
   course,
+  mode = "recorded",
   isOpen,
   onClose,
 }: CourseEnrollModalProps) {
+  const [selectedMode, setSelectedMode] = useState<CourseMode>(mode);
+  const { addCourseToCart } = useCart();
+
   const [studentData, setStudentData] = useState({
     name: "",
     email: "",
@@ -30,7 +37,20 @@ export default function CourseEnrollModal({
     paymentId?: string;
   } | null>(null);
 
+  // Sync mode whenever modal opens or mode prop changes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedMode(mode);
+    }
+  }, [isOpen, mode]);
+
   if (!isOpen) return null;
+
+  // Active pricing and schedule based on selected mode
+  const pricing = selectedMode === "live" ? (course.live || course.recorded) : course.recorded;
+  const currentPrice = pricing?.price ?? course.price;
+  const currentOriginalPrice = pricing?.originalPrice ?? course.originalPrice;
+  const nextBatch = selectedMode === "live" ? course.live?.nextBatch : undefined;
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -60,7 +80,7 @@ export default function CourseEnrollModal({
     setErrors({});
 
     try {
-      // 1. Create Razorpay Course Order on backend
+      // 1. Create Razorpay Course Order on backend with selectedMode
       const res = await fetch("/api/payments/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,6 +88,7 @@ export default function CourseEnrollModal({
           type: "COURSE_PURCHASE",
           courseId: course.id,
           courseSlug: course.slug,
+          mode: selectedMode,
           studentData,
         }),
       });
@@ -100,7 +121,7 @@ export default function CourseEnrollModal({
         orderId: orderData.orderId,
         amount: orderData.amount,
         title: "Vrikszon Occultaura",
-        description: `Course: ${course.title}`,
+        description: `Course: ${course.title} (${selectedMode === "live" ? "Live" : "Recorded"})`,
         prefill: {
           name: studentData.name,
           email: studentData.email,
@@ -135,7 +156,6 @@ export default function CourseEnrollModal({
             setIsSubmitting(false);
           } catch (verifyErr) {
             console.error("Course verification error:", verifyErr);
-            // Fallback status check
             const check = await pollPaymentStatus(orderData.orderId, 5, 1200);
             if (check.isPaid) {
               handleCourseSuccess(check.data?.razorpayPaymentId);
@@ -148,7 +168,6 @@ export default function CourseEnrollModal({
           }
         },
         onDismiss: async () => {
-          // Check if payment was captured via Netbanking/UPI redirect before marking dismissed
           const check = await pollPaymentStatus(orderData.orderId, 6, 1200);
           if (check.isPaid) {
             handleCourseSuccess(check.data?.razorpayPaymentId);
@@ -162,7 +181,6 @@ export default function CourseEnrollModal({
         },
         onError: async (err) => {
           console.error("Razorpay Popup Error:", err);
-          // Check if payment actually succeeded despite popup error
           const check = await pollPaymentStatus(orderData.orderId, 5, 1200);
           if (check.isPaid) {
             handleCourseSuccess(check.data?.razorpayPaymentId);
@@ -191,7 +209,7 @@ export default function CourseEnrollModal({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div
-        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-gold-500/30 bg-white p-6 shadow-2xl sm:p-8"
+        className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-gold-500/30 bg-white p-6 shadow-2xl sm:p-8 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -207,26 +225,89 @@ export default function CourseEnrollModal({
         {!isSuccess ? (
           <div>
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-navy-900/10 pb-4 mb-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-50 text-gold-600 border border-gold-500/20">
+            <div className="flex items-center gap-3 border-b border-navy-900/10 pb-4 mb-4">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold-50 text-gold-600 border border-gold-500/20 shrink-0">
                 <BookOpen className="h-5 w-5" />
               </span>
-              <div>
+              <div className="min-w-0 flex-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-gold-700">
                   Course Enrollment
                 </span>
-                <h3 className="font-heading text-h5 font-semibold text-navy-950 line-clamp-1">
+                <h3 className="font-heading text-h5 font-semibold text-navy-950 truncate">
                   {course.title}
                 </h3>
               </div>
             </div>
 
+            {/* Mode Toggle Switch within Modal */}
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-navy-900 mb-1.5">
+                Select Purchase Mode
+              </label>
+              <div
+                className="grid grid-cols-2 gap-2 rounded-xl bg-navy-50 p-1 border border-navy-900/10"
+                role="tablist"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedMode === "recorded"}
+                  onClick={() => setSelectedMode("recorded")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                    selectedMode === "recorded"
+                      ? "bg-white text-navy-950 shadow-xs border border-gold-500/30 text-gold-700"
+                      : "text-navy-600 hover:text-navy-950 hover:bg-white/40"
+                  )}
+                >
+                  <Video className="h-3.5 w-3.5" />
+                  <span>Recorded Access</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedMode === "live"}
+                  onClick={() => setSelectedMode("live")}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                    selectedMode === "live"
+                      ? "bg-white text-navy-950 shadow-xs border border-gold-500/30 text-gold-700"
+                      : "text-navy-600 hover:text-navy-950 hover:bg-white/40"
+                  )}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>Live Masterclass</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Live Next Batch Schedule Notice */}
+            {selectedMode === "live" && nextBatch && (
+              <div className="mb-4 flex items-center gap-2 rounded-xl bg-gold-50 border border-gold-500/30 p-2.5 text-xs text-gold-900">
+                <Calendar className="h-4 w-4 text-gold-600 shrink-0" />
+                <span className="font-medium">{nextBatch}</span>
+              </div>
+            )}
+
             {/* Price Badge */}
-            <div className="mb-6 rounded-xl border border-gold-500/20 bg-gold-50/50 p-4 flex items-center justify-between">
+            <div className="mb-5 rounded-xl border border-gold-500/20 bg-gold-50/50 p-4 flex items-center justify-between">
               <div>
-                <span className="text-xs text-navy-700">Enrollment Fee</span>
-                <div className="font-heading text-h4 font-bold text-gold-700">
-                  {formatCoursePrice(course.price)}
+                <span className="text-xs text-navy-700">
+                  {selectedMode === "live" ? "Live Masterclass Fee" : "Recorded Course Fee"}
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-heading text-h4 font-bold text-gold-700">
+                    {formatCoursePrice(currentPrice)}
+                  </span>
+                  {currentOriginalPrice && (
+                    <span className="text-xs text-text-muted line-through">
+                      {formatCoursePrice(currentOriginalPrice)}
+                    </span>
+                  )}
                 </div>
               </div>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-800">
@@ -292,15 +373,29 @@ export default function CourseEnrollModal({
                 {errors.phone && <p className="mt-1 text-xs text-rose-600">{errors.phone}</p>}
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col sm:flex-row gap-2">
                 <Button
                   type="submit"
                   size="lg"
                   fullWidth
                   disabled={isSubmitting}
                   leftIcon={<Lock className="h-4 w-4" />}
+                  className="flex-1"
                 >
                   {isSubmitting ? "Opening Razorpay..." : "Pay & Enroll Now"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="lg"
+                  onClick={() => {
+                    addCourseToCart(course, selectedMode);
+                    onClose();
+                  }}
+                  leftIcon={<ShoppingBag className="h-4 w-4" />}
+                >
+                  Add to Cart
                 </Button>
               </div>
 
@@ -318,13 +413,13 @@ export default function CourseEnrollModal({
 
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-gold-700">
-                Enrollment Confirmed
+                Enrollment Confirmed ({selectedMode === "live" ? "Live" : "Recorded"})
               </span>
               <h3 className="font-heading text-h4 font-bold text-navy-950 mt-1">
                 Welcome to {course.title}!
               </h3>
               <p className="text-sm text-navy-700/80 mt-1">
-                Your payment was successfully verified. A confirmation receipt and session joining details have been recorded for <strong>{studentData.email}</strong>.
+                Your payment was successfully verified. Confirmation receipt and {selectedMode === "live" ? "live session batch links" : "on-demand access details"} have been recorded for <strong>{studentData.email}</strong>.
               </p>
             </div>
 

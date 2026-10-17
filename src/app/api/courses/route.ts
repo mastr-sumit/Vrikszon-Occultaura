@@ -22,22 +22,38 @@ export async function GET() {
       },
     });
 
-    const formatted: Course[] = dbCourses.map((c) => ({
-      id: c.id,
-      slug: c.slug,
-      title: c.title,
-      category: c.categoryRel?.name || c.category || "Uncategorized",
-      categoryId: c.categoryId || undefined,
-      categorySlug:
-        c.categoryRel?.slug ||
-        (c.category ? c.category.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "uncategorized"),
-      image: c.image,
-      price: c.price,
-      originalPrice: c.originalPrice,
-      shortDescription: c.shortDescription,
-      enrollHref: c.enrollHref || "/book-consultation",
-      enabled: c.enabled,
-    }));
+    const formatted: Course[] = dbCourses.map((c) => {
+      const dbAny = c as typeof c & {
+        livePrice?: number | null;
+        liveOriginalPrice?: number | null;
+        nextBatch?: string | null;
+      };
+      return {
+        id: c.id,
+        slug: c.slug,
+        title: c.title,
+        category: c.categoryRel?.name || c.category || "Uncategorized",
+        categoryId: c.categoryId || undefined,
+        categorySlug:
+          c.categoryRel?.slug ||
+          (c.category ? c.category.toLowerCase().replace(/[^a-z0-9]+/g, "-") : "uncategorized"),
+        image: c.image,
+        recorded: {
+          price: c.price,
+          originalPrice: c.originalPrice,
+        },
+        live: {
+          price: dbAny.livePrice ?? c.price,
+          originalPrice: dbAny.liveOriginalPrice ?? c.originalPrice,
+          nextBatch: dbAny.nextBatch || "Upcoming Batch: Starts 1st of Next Month",
+        },
+        price: c.price,
+        originalPrice: c.originalPrice,
+        shortDescription: c.shortDescription,
+        enrollHref: c.enrollHref || "/book-consultation",
+        enabled: c.enabled,
+      };
+    });
 
     return NextResponse.json(formatted, {
       headers: {

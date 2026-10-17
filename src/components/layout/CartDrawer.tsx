@@ -8,6 +8,7 @@ import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Sparkles } from "lucid
 import { useCart } from "@/context/CartContext";
 import { formatProductPrice } from "@/data/products";
 import Button from "@/components/ui/Button";
+import { cn } from "@/lib/utils";
 
 /**
  * CartDrawer
@@ -254,11 +255,15 @@ const CartDrawer = () => {
               ) : (
                 /* ── Cart items list ──────────────────────────────── */
                 <div className="flex flex-col gap-4 p-6">
-                  {items.map(({ product, quantity }, index) => {
+                  {items.map(({ product, quantity, mode }, index) => {
                     const imageSrc = product.image || `/images/products/${product.slug}.jpg`;
+                    const itemKey = `${product.id}-${mode || "standard"}`;
+                    const displayName = mode
+                      ? `${product.name}, ${mode === "live" ? "Live" : "Recorded"}`
+                      : product.name;
                     return (
                       <motion.div
-                        key={product.id}
+                        key={itemKey}
                         initial={shouldReduceMotion ? {} : { opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{
@@ -284,11 +289,25 @@ const CartDrawer = () => {
                         {/* Details */}
                         <div className="flex flex-1 flex-col justify-between">
                           <div>
-                            <span className="text-caption font-semibold uppercase tracking-wider text-gold-600">
-                              {product.category}
-                            </span>
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-caption font-semibold uppercase tracking-wider text-gold-600">
+                                {product.category}
+                              </span>
+                              {mode && (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                                    mode === "live"
+                                      ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                      : "bg-navy-100 text-navy-800 border border-navy-200"
+                                  )}
+                                >
+                                  {mode === "live" ? "Live" : "Recorded"}
+                                </span>
+                              )}
+                            </div>
                             <h4 className="font-heading text-body font-medium text-navy-900 line-clamp-1 leading-snug">
-                              {product.name}
+                              {displayName}
                             </h4>
                             <p className="text-body-sm font-semibold text-navy-800 mt-0.5">
                               {formatProductPrice(product.price)}
@@ -300,7 +319,7 @@ const CartDrawer = () => {
                             <div className="flex items-center rounded-[10px] border border-border bg-white shadow-xs">
                               <button
                                 type="button"
-                                onClick={() => updateQuantity(product.id, quantity - 1)}
+                                onClick={() => updateQuantity(product.id, quantity - 1, mode)}
                                 className="px-2.5 py-1.5 text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-l-[9px] transition-colors duration-fast active:scale-95"
                                 aria-label="Decrease quantity"
                               >
@@ -311,7 +330,7 @@ const CartDrawer = () => {
                               </span>
                               <button
                                 type="button"
-                                onClick={() => updateQuantity(product.id, quantity + 1)}
+                                onClick={() => updateQuantity(product.id, quantity + 1, mode)}
                                 className="px-2.5 py-1.5 text-navy-600 hover:text-navy-900 hover:bg-navy-50 rounded-r-[9px] transition-colors duration-fast active:scale-95"
                                 aria-label="Increase quantity"
                               >
@@ -321,9 +340,9 @@ const CartDrawer = () => {
 
                             <button
                               type="button"
-                              onClick={() => removeFromCart(product.id)}
+                              onClick={() => removeFromCart(product.id, mode)}
                               className="rounded-[10px] p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 transition-colors duration-fast active:scale-95"
-                              aria-label="Remove product"
+                              aria-label="Remove item"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>

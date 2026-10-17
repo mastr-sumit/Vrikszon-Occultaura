@@ -183,6 +183,9 @@ export const CourseScalarFieldEnum = {
   image: 'image',
   price: 'price',
   originalPrice: 'originalPrice',
+  livePrice: 'livePrice',
+  liveOriginalPrice: 'liveOriginalPrice',
+  nextBatch: 'nextBatch',
   shortDescription: 'shortDescription',
   enrollHref: 'enrollHref',
   enabled: 'enabled',
@@ -222,7 +225,8 @@ export const OrderItemScalarFieldEnum = {
   orderId: 'orderId',
   productId: 'productId',
   quantity: 'quantity',
-  price: 'price'
+  price: 'price',
+  purchaseMode: 'purchaseMode'
 } as const
 
 export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
@@ -243,6 +247,7 @@ export const PaymentScalarFieldEnum = {
   orderId: 'orderId',
   bookingId: 'bookingId',
   courseId: 'courseId',
+  purchaseMode: 'purchaseMode',
   metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

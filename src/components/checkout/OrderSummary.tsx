@@ -38,12 +38,16 @@ export default function OrderSummary() {
 
         {/* Item List */}
         <ul className="divide-y divide-navy-900/5" role="list">
-          {items.map(({ product, quantity }) => {
+          {items.map(({ product, quantity, mode }) => {
             const imageSrc = product.image || `/images/products/${product.slug}.jpg`;
             const lineTotal = (product.price ?? 0) * quantity;
+            const itemKey = `${product.id}-${mode || "standard"}`;
+            const displayName = mode
+              ? `${product.name}, ${mode === "live" ? "Live" : "Recorded"}`
+              : product.name;
 
             return (
-              <li key={product.id} className="flex gap-4 py-4 sm:py-5">
+              <li key={itemKey} className="flex gap-4 py-4 sm:py-5">
                 {/* Product Thumbnail */}
                 <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-navy-900/10 bg-navy-50/50">
                   <Image
@@ -62,18 +66,31 @@ export default function OrderSummary() {
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <span className="text-caption font-semibold uppercase tracking-wider text-gold-600">
-                          {product.category}
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-caption font-semibold uppercase tracking-wider text-gold-600">
+                            {product.category}
+                          </span>
+                          {mode && (
+                            <span
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                mode === "live"
+                                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                  : "bg-navy-100 text-navy-800 border border-navy-200"
+                              }`}
+                            >
+                              {mode === "live" ? "Live" : "Recorded"}
+                            </span>
+                          )}
+                        </div>
                         <h3 className="font-heading text-body font-medium text-navy-950 line-clamp-1 leading-snug">
-                          {product.name}
+                          {displayName}
                         </h3>
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeFromCart(product.id)}
+                        onClick={() => removeFromCart(product.id, mode)}
                         className="rounded-lg p-1.5 text-navy-900/40 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
-                        aria-label={`Remove ${product.name} from cart`}
+                        aria-label={`Remove ${displayName} from cart`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -90,9 +107,9 @@ export default function OrderSummary() {
                     <div className="flex items-center rounded-lg border border-navy-900/15 bg-white shadow-2xs">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(product.id, quantity - 1)}
+                        onClick={() => updateQuantity(product.id, quantity - 1, mode)}
                         className="px-2.5 py-1 text-navy-700 transition-colors hover:bg-navy-50 hover:text-navy-950 rounded-l-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
-                        aria-label={`Decrease quantity of ${product.name}`}
+                        aria-label={`Decrease quantity of ${displayName}`}
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
@@ -101,9 +118,9 @@ export default function OrderSummary() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(product.id, quantity + 1)}
+                        onClick={() => updateQuantity(product.id, quantity + 1, mode)}
                         className="px-2.5 py-1 text-navy-700 transition-colors hover:bg-navy-50 hover:text-navy-950 rounded-r-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500"
-                        aria-label={`Increase quantity of ${product.name}`}
+                        aria-label={`Increase quantity of ${displayName}`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>

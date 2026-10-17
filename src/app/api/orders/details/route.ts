@@ -91,6 +91,7 @@ export async function GET(request: Request) {
           href: item.product?.slug ? `/shop/${item.product.slug}` : "/shop",
         },
         quantity: item.quantity,
+        mode: item.purchaseMode || undefined,
       };
     });
 

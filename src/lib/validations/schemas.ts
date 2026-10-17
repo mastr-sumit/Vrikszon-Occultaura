@@ -409,6 +409,26 @@ export const createCourseSchema = z
       .max(100000000, "Original price exceeds allowable limit")
       .optional()
       .nullable(),
+    livePrice: z
+      .number()
+      .int("Live price must be an integer in rupees")
+      .min(0, "Live price must be 0 or greater")
+      .max(100000000, "Live price exceeds allowable limit")
+      .optional()
+      .nullable(),
+    liveOriginalPrice: z
+      .number()
+      .int("Live original price must be an integer in rupees")
+      .min(0, "Live original price must be 0 or greater")
+      .max(100000000, "Live original price exceeds allowable limit")
+      .optional()
+      .nullable(),
+    nextBatch: z
+      .string()
+      .trim()
+      .max(200, "Next batch cannot exceed 200 characters")
+      .optional()
+      .nullable(),
     shortDescription: z
       .string()
       .trim()

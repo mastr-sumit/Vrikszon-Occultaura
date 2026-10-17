@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Loader2, BookOpen, AlertCircle, Plus, Check } from "lucide-react";
+import { X, Loader2, BookOpen, AlertCircle, Plus, Check, Video, Calendar } from "lucide-react";
 import { FileUploadInput } from "../FileUploadInput";
 
 export interface AdminCourse {
@@ -12,6 +12,9 @@ export interface AdminCourse {
   image: string;
   price: number | null;
   originalPrice?: number | null;
+  livePrice?: number | null;
+  liveOriginalPrice?: number | null;
+  nextBatch?: string | null;
   shortDescription: string;
   enrollHref: string;
   enabled: boolean;
@@ -54,6 +57,9 @@ export function CourseModal({
     image: "/images/courses/basic-vastu.jpg",
     price: "",
     originalPrice: "",
+    livePrice: "",
+    liveOriginalPrice: "",
+    nextBatch: "",
     shortDescription: "",
     enrollHref: "/book-consultation",
     enabled: true,
@@ -93,8 +99,11 @@ export function CourseModal({
         title: course.title,
         category: course.category || categoriesList[0] || DEFAULT_COURSE_CATEGORIES[0],
         image: course.image,
-        price: course.price !== null ? String(course.price) : "",
+        price: course.price !== null && course.price !== undefined ? String(course.price) : "",
         originalPrice: course.originalPrice !== null && course.originalPrice !== undefined ? String(course.originalPrice) : "",
+        livePrice: course.livePrice !== null && course.livePrice !== undefined ? String(course.livePrice) : "",
+        liveOriginalPrice: course.liveOriginalPrice !== null && course.liveOriginalPrice !== undefined ? String(course.liveOriginalPrice) : "",
+        nextBatch: course.nextBatch || "",
         shortDescription: course.shortDescription,
         enrollHref: course.enrollHref || "/book-consultation",
         enabled: course.enabled,
@@ -107,6 +116,9 @@ export function CourseModal({
         image: "/images/services/mobile-numerology-course.jpg",
         price: "",
         originalPrice: "",
+        livePrice: "",
+        liveOriginalPrice: "",
+        nextBatch: "",
         shortDescription: "",
         enrollHref: "/book-consultation",
         enabled: true,
@@ -114,7 +126,7 @@ export function CourseModal({
     }
     setError(null);
     setIsSubmitting(false);
-  }, [course, isOpen]);
+  }, [course, isOpen, categoriesList]);
 
   const handleQuickAddCategory = async () => {
     const trimmed = newCategoryInput.trim();
@@ -192,6 +204,9 @@ export function CourseModal({
       image: formData.image.trim(),
       price: formData.price ? parseInt(formData.price, 10) : null,
       originalPrice: formData.originalPrice ? parseInt(formData.originalPrice, 10) : null,
+      livePrice: formData.livePrice ? parseInt(formData.livePrice, 10) : null,
+      liveOriginalPrice: formData.liveOriginalPrice ? parseInt(formData.liveOriginalPrice, 10) : null,
+      nextBatch: formData.nextBatch.trim() ? formData.nextBatch.trim() : null,
       shortDescription: formData.shortDescription.trim(),
       enrollHref: formData.enrollHref.trim() || "/book-consultation",
       enabled: formData.enabled,
@@ -240,21 +255,26 @@ export function CourseModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-xl border border-navy-700/60 bg-navy-900 shadow-2xl my-8">
+      <div className="relative w-full max-w-2xl rounded-xl border border-navy-700/60 bg-navy-900 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-navy-800">
+        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b border-navy-800 bg-navy-900/95 backdrop-blur-sm">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gold-500/10 text-gold-400">
               <BookOpen className="h-4 w-4" />
             </div>
-            <h2 className="font-heading text-h5 font-semibold text-white">
-              {isEdit ? "Edit Course" : "Add New Course"}
-            </h2>
+            <div>
+              <h2 className="text-body font-semibold text-white">
+                {isEdit ? "Edit Course" : "Add New Course"}
+              </h2>
+              <p className="text-[11px] text-navy-400">
+                Configure certification details, live/recorded pricing, and batch dates
+              </p>
+            </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-base p-1 text-navy-400 hover:text-white hover:bg-navy-800 transition-colors"
+            className="rounded-base p-1 text-navy-400 hover:bg-navy-800 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -262,14 +282,14 @@ export function CourseModal({
 
         {/* Error notification */}
         {error && (
-          <div className="mx-6 mt-4 flex items-center gap-2 rounded-base border border-rose-500/30 bg-rose-950/40 p-3 text-small text-rose-300">
+          <div className="mx-6 mt-4 flex items-center gap-2 rounded-base border border-rose-500/30 bg-rose-500/10 px-3.5 py-2.5 text-xs text-rose-300">
             <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Title & Slug */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -281,64 +301,54 @@ export function CourseModal({
                 required
                 value={formData.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="e.g. Mobile Numerology Mastery"
+                placeholder="e.g. Master Vastu Shastra"
                 className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-navy-200 mb-1">
-                Slug (URL Identifier) <span className="text-gold-400">*</span>
+                URL Slug <span className="text-gold-400">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={formData.slug}
                 onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                placeholder="e.g. mobile-numerology-mastery"
+                placeholder="e.g. master-vastu-shastra"
                 className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
               />
             </div>
           </div>
 
-          {/* Category & Image */}
           {/* Category */}
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="block text-xs font-medium text-navy-200">
-                Category <span className="text-gold-400">*</span>
+                Discipline / Category
               </label>
               {!isAddingNewCategory && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsAddingNewCategory(true);
-                    setNewCategoryInput("");
-                    setCategoryCreateError(null);
-                  }}
-                  className="text-[11px] text-gold-400 hover:text-gold-300 font-semibold flex items-center gap-1 transition-colors"
+                  onClick={() => setIsAddingNewCategory(true)}
+                  className="text-[11px] text-gold-400 hover:text-gold-300 flex items-center gap-1 font-medium"
                 >
                   <Plus className="h-3 w-3" />
-                  + Add New Category
+                  <span>New Category</span>
                 </button>
               )}
             </div>
 
             {isAddingNewCategory ? (
-              <div className="space-y-1.5 p-2 rounded-base border border-gold-500/30 bg-navy-950/80">
-                <div className="flex items-center gap-2">
+              <div className="space-y-2 p-3 rounded-lg border border-gold-500/30 bg-navy-950">
+                <p className="text-[11px] text-gold-300 font-medium">Create and link new category:</p>
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    autoFocus
+                    disabled={isCreatingCategory}
                     value={newCategoryInput}
                     onChange={(e) => setNewCategoryInput(e.target.value)}
-                    placeholder="New course category name..."
-                    className="flex-1 rounded border border-navy-700 bg-navy-900 px-2.5 py-1 text-xs text-white placeholder:text-gray-500 focus:border-gold-400 focus:outline-none"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleQuickAddCategory();
-                      }
-                    }}
+                    placeholder="e.g. Tarot Mastery"
+                    className="flex-1 rounded border border-navy-700 bg-navy-900 px-3 py-1.5 text-xs text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -391,33 +401,100 @@ export function CourseModal({
             helperText="Uploaded to public/images/courses"
           />
 
-          {/* Price & Original Price */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-navy-200 mb-1">
-                Offer Price (INR ₹ — leave empty for Price on request)
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="e.g. 4999"
-                className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
-              />
+          {/* Pricing Controls: Recorded Mode & Live Mode */}
+          <div className="space-y-4 pt-1">
+            {/* 1. Recorded Mode Pricing */}
+            <div className="rounded-xl border border-navy-800 bg-navy-950/70 p-4">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-navy-800/80">
+                <Video className="h-4 w-4 text-gold-400" />
+                <span className="text-xs font-semibold text-white uppercase tracking-wider">
+                  Recorded Mode Pricing
+                </span>
+                <span className="text-[10px] text-navy-400 ml-auto">Self-Paced Learning</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-navy-200 mb-1">
+                    Recorded Offer Price (INR ₹ — leave empty for Price on request)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="e.g. 4999"
+                    className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-navy-200 mb-1">
+                    Recorded Original Strike Price (INR ₹ — Optional)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.originalPrice}
+                    onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
+                    placeholder="e.g. 7999"
+                    className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+                  />
+                </div>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-navy-200 mb-1">
-                Original Strike Price (INR ₹ — Optional)
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={formData.originalPrice}
-                onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                placeholder="e.g. 7999"
-                className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
-              />
+
+            {/* 2. Live Mode Pricing & Batch */}
+            <div className="rounded-xl border border-emerald-900/40 bg-navy-950/70 p-4">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-navy-800/80">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">
+                  Live Masterclass Pricing &amp; Batch
+                </span>
+                <span className="text-[10px] text-emerald-400/80 ml-auto">Interactive Cohort</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                <div>
+                  <label className="block text-xs font-medium text-navy-200 mb-1">
+                    Live Offer Price (INR ₹ — leave empty to match Recorded)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.livePrice}
+                    onChange={(e) => setFormData({ ...formData, livePrice: e.target.value })}
+                    placeholder="e.g. 6999"
+                    className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-navy-200 mb-1">
+                    Live Original Strike Price (INR ₹ — Optional)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.liveOriginalPrice}
+                    onChange={(e) => setFormData({ ...formData, liveOriginalPrice: e.target.value })}
+                    placeholder="e.g. 9999"
+                    className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-navy-200 mb-1 flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-gold-400" />
+                  <span>Upcoming Live Batch Schedule (Optional — shown exclusively on Live tab)</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.nextBatch}
+                  onChange={(e) => setFormData({ ...formData, nextBatch: e.target.value })}
+                  placeholder="e.g. Upcoming Batch: Starts 15th of Next Month"
+                  className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 
@@ -469,7 +546,7 @@ export function CourseModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="rounded-base border border-navy-700 bg-navy-950 px-4 py-2 text-small font-medium text-navy-200 hover:text-white transition-colors"
+              className="rounded-base border border-navy-700 bg-navy-950 px-4 py-2 text-small font-medium text-navy-200 hover:text-white transition-colors cursor-pointer"
             >
               Cancel
             </button>

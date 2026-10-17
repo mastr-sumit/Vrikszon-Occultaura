@@ -149,21 +149,24 @@ model Product {
 // Academy / Courses (from /courses)
 // ─────────────────────────────────────────────
 model Course {
-  id               String    @id @default(cuid())
-  slug             String    @unique
-  title            String
-  category         String?
-  categoryId       String?
-  categoryRel      Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-  image            String
-  price            Int? // INR, null = price on request
-  originalPrice    Int? // INR, null = no strike-through price
-  shortDescription String
-  enrollHref       String
-  enabled          Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  payments         Payment[]
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  title             String
+  category          String?
+  categoryId        String?
+  categoryRel       Category? @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  image             String
+  price             Int? // INR, null = price on request (Recorded mode price)
+  originalPrice     Int? // INR, null = no strike-through price
+  livePrice         Int? // INR, null = price on request (Live mode price)
+  liveOriginalPrice Int? // INR, null = no strike-through price
+  nextBatch         String? // e.g. "Upcoming Batch: Starts 15th Next Month"
+  shortDescription  String
+  enrollHref        String
+  enabled           Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  payments          Payment[]
 
   @@index([categoryId])
 }
@@ -192,13 +195,14 @@ model Order {
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId   String
-  product   Product  @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int      @default(1)
-  price     Int // price at time of order (INR)
+  id           String   @id @default(cuid())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+  product      Product  @relation(fields: [productId], references: [id])
+  productId    String
+  quantity     Int      @default(1)
+  price        Int // price at time of order (INR)
+  purchaseMode String?  @map("purchase_mode") // "recorded" | "live"
 }
 
 enum OrderStatus {
@@ -254,6 +258,7 @@ model Payment {
   
   courseId           String?
   course             Course?             @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  purchaseMode       String?             @map("purchase_mode") // "recorded" | "live" for COURSE_PURCHASE or item purchase
   
   metadata           String?             // JSON string storing extra details (items, birth details, etc.)
   

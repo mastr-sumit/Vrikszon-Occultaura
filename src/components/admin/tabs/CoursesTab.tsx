@@ -211,18 +211,30 @@ export function CoursesTab({
 
                     {/* Pricing */}
                     <td className="py-3.5 px-4 font-mono">
-                      {course.price !== null ? (
-                        <div className="space-y-0.5">
-                          <div className="text-gold-400 font-medium">₹{course.price.toLocaleString("en-IN")}</div>
-                          {course.originalPrice && (
-                            <div className="text-[10px] text-navy-400 line-through">
-                              ₹{course.originalPrice.toLocaleString("en-IN")}
-                            </div>
+                      <div className="space-y-1.5 text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-sans uppercase tracking-wider text-navy-400 bg-navy-950 px-1.5 py-0.5 rounded border border-navy-800">
+                            Rec
+                          </span>
+                          {course.price !== null ? (
+                            <span className="text-gold-400 font-medium">₹{course.price.toLocaleString("en-IN")}</span>
+                          ) : (
+                            <span className="text-navy-400 italic text-[11px]">On request</span>
                           )}
                         </div>
-                      ) : (
-                        <span className="text-navy-400 text-xs italic">Price on request</span>
-                      )}
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-sans uppercase tracking-wider text-emerald-400 bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                            Live
+                          </span>
+                          {course.livePrice !== null && course.livePrice !== undefined ? (
+                            <span className="text-emerald-300 font-medium">₹{course.livePrice.toLocaleString("en-IN")}</span>
+                          ) : course.price !== null ? (
+                            <span className="text-gold-400/80 font-medium">₹{course.price.toLocaleString("en-IN")}</span>
+                          ) : (
+                            <span className="text-navy-400 italic text-[11px]">On request</span>
+                          )}
+                        </div>
+                      </div>
                     </td>
 
                     {/* Status */}

@@ -2,17 +2,21 @@
 
 import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { Product } from "@/data/products";
+import { Course, CourseMode } from "@/data/courses";
 
 export interface CartItem {
   product: Product;
   quantity: number;
+  mode?: CourseMode;
+  itemType?: "product" | "course";
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, mode?: CourseMode) => void;
+  addCourseToCart: (course: Course, mode: CourseMode) => void;
+  removeFromCart: (productId: string, mode?: CourseMode) => void;
+  updateQuantity: (productId: string, quantity: number, mode?: CourseMode) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -28,9 +32,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, mode?: CourseMode) => {
     setItems((prevItems) => {
-      const existingIndex = prevItems.findIndex((item) => item.product.id === product.id);
+      const existingIndex = prevItems.findIndex(
+        (item) => item.product.id === product.id && item.mode === mode
+      );
       if (existingIndex > -1) {
         const updated = [...prevItems];
         updated[existingIndex] = {
@@ -39,25 +45,80 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         return updated;
       }
-      return [...prevItems, { product, quantity: 1 }];
+      return [...prevItems, { product, quantity: 1, mode, itemType: "product" }];
     });
   }, []);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
+  const addCourseToCart = useCallback((course: Course, mode: CourseMode) => {
+    const pricing = mode === "live" ? (course.live || course.recorded) : course.recorded;
+    const selectedPrice = pricing?.price ?? course.price;
+
+    const courseAsProduct: Product = {
+      id: course.id,
+      slug: course.slug,
+      name: course.title,
+      category: course.category || "Course",
+      shortDescription: course.shortDescription,
+      price: selectedPrice,
+      image: course.image,
+      icon: "sparkles",
+      featured: false,
+      enabled: course.enabled,
+      href: `/courses#${course.slug}`,
+    };
+
+    setItems((prevItems) => {
+      const existingIndex = prevItems.findIndex(
+        (item) => item.product.id === course.id && item.mode === mode
+      );
+      if (existingIndex > -1) {
+        const updated = [...prevItems];
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + 1,
+        };
+        return updated;
+      }
+      return [
+        ...prevItems,
+        {
+          product: courseAsProduct,
+          quantity: 1,
+          mode,
+          itemType: "course",
+        },
+      ];
+    });
+
+    setIsOpen(true);
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
+  const removeFromCart = useCallback((productId: string, mode?: CourseMode) => {
+    setItems((prevItems) =>
+      prevItems.filter((item) => {
+        if (mode !== undefined) {
+          return !(item.product.id === productId && item.mode === mode);
+        }
+        return item.product.id !== productId;
+      })
+    );
+  }, []);
+
+  const updateQuantity = useCallback((productId: string, quantity: number, mode?: CourseMode) => {
     if (quantity <= 0) {
-      setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId));
+      removeFromCart(productId, mode);
       return;
     }
     setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
+      prevItems.map((item) => {
+        const matches =
+          mode !== undefined
+            ? item.product.id === productId && item.mode === mode
+            : item.product.id === productId;
+        return matches ? { ...item, quantity } : item;
+      })
     );
-  }, []);
+  }, [removeFromCart]);
 
   const clearCart = useCallback(() => {
     setItems([]);
@@ -79,6 +140,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     () => ({
       items,
       addToCart,
+      addCourseToCart,
       removeFromCart,
       updateQuantity,
       clearCart,
@@ -92,6 +154,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [
       items,
       addToCart,
+      addCourseToCart,
       removeFromCart,
       updateQuantity,
       clearCart,
