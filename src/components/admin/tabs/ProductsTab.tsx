@@ -298,7 +298,26 @@ export function ProductsTab({
 
                     {/* Price */}
                     <td className="py-3.5 px-4 font-mono font-medium text-white">
-                      {product.price !== null ? (
+                      {product.priceAAA !== null && product.priceAAA !== undefined ? (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-sans uppercase tracking-wider text-blue-400 bg-blue-950/60 px-1.5 py-0.2 rounded border border-blue-500/30">
+                              AA
+                            </span>
+                            <span className="text-gold-400">
+                              {product.price !== null ? `₹${product.price.toLocaleString("en-IN")}` : "On Request"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-sans uppercase tracking-wider text-amber-400 bg-amber-950/60 px-1.5 py-0.2 rounded border border-amber-500/30">
+                              AAA
+                            </span>
+                            <span className="text-amber-300">
+                              ₹{product.priceAAA.toLocaleString("en-IN")}
+                            </span>
+                          </div>
+                        </div>
+                      ) : product.price !== null ? (
                         <span className="text-gold-400">₹{product.price.toLocaleString("en-IN")}</span>
                       ) : (
                         <span className="text-navy-400 text-xs italic">On Request</span>

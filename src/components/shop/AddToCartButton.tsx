@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ShoppingBag, Check, Plus, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import Button from "@/components/ui/Button";
@@ -8,21 +8,29 @@ import { useCart } from "@/context/CartContext";
 import type { Product } from "@/data/products";
 import { cn } from "@/lib/utils";
 
+import type { ItemMode } from "@/context/CartContext";
+
 interface AddToCartButtonProps {
   product: Product;
+  mode?: ItemMode;
   className?: string;
 }
 
-export const AddToCartButton = ({ product, className }: AddToCartButtonProps) => {
+export const AddToCartButton = ({ product, mode, className }: AddToCartButtonProps) => {
   const shouldReduceMotion = useReducedMotion();
   const { addToCart, openCart } = useCart();
   const [buttonState, setButtonState] = useState<"idle" | "added" | "split">("idle");
   const [justAddedMore, setJustAddedMore] = useState(false);
 
+  // Reset button state when mode changes
+  useEffect(() => {
+    setButtonState("idle");
+  }, [mode]);
+
   const handleInitialAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(product, mode);
     setButtonState("added");
 
     setTimeout(() => {
@@ -33,7 +41,7 @@ export const AddToCartButton = ({ product, className }: AddToCartButtonProps) =>
   const handleAddMore = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart(product);
+    addToCart(product, mode);
     setJustAddedMore(true);
 
     setTimeout(() => {

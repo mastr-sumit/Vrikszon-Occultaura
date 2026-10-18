@@ -44,6 +44,7 @@ export async function GET() {
         subtitle: p.subtitle || undefined,
         benefits,
         price: p.price,
+        priceAAA: p.priceAAA ?? undefined,
         image: p.image,
         icon: validIcon,
         featured: p.featured,

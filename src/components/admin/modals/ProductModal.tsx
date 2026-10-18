@@ -13,6 +13,7 @@ export interface AdminProduct {
   subtitle?: string | null;
   benefits?: string[] | null;
   price: number | null;
+  priceAAA?: number | null;
   image: string | null;
   icon: string;
   featured: boolean;
@@ -66,6 +67,7 @@ export function ProductModal({
     subtitle: "",
     benefitsText: "",
     price: "930",
+    priceAAA: "",
     image: "",
     icon: "sparkles",
     featured: false,
@@ -112,6 +114,7 @@ export function ProductModal({
         subtitle: product.subtitle || "",
         benefitsText: Array.isArray(product.benefits) ? product.benefits.join("\n") : "",
         price: product.price !== null ? String(product.price) : "",
+        priceAAA: product.priceAAA !== null && product.priceAAA !== undefined ? String(product.priceAAA) : "",
         image: product.image || "",
         icon: product.icon || "sparkles",
         featured: product.featured,
@@ -128,6 +131,7 @@ export function ProductModal({
         subtitle: "",
         benefitsText: "",
         price: "930",
+        priceAAA: "",
         image: "",
         icon: "sparkles",
         featured: false,
@@ -219,6 +223,7 @@ export function ProductModal({
       subtitle: formData.subtitle.trim() || null,
       benefits: benefitsArray.length > 0 ? benefitsArray : null,
       price: formData.price ? parseInt(formData.price, 10) : null,
+      priceAAA: formData.priceAAA ? parseInt(formData.priceAAA, 10) : null,
       image: formData.image.trim() || null,
       icon: formData.icon,
       featured: formData.featured,
@@ -410,8 +415,9 @@ export function ProductModal({
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-navy-200 mb-1">
-                Price (INR ₹ — leave empty for Price on request)
+              <label className="block text-xs font-medium text-navy-200 mb-1 flex items-center justify-between">
+                <span>Standard / AA Quality Price (INR ₹)</span>
+                <span className="text-[10px] text-blue-300 font-semibold bg-blue-950/70 px-1.5 py-0.5 rounded border border-blue-700/40">AA Tab</span>
               </label>
               <input
                 type="number"
@@ -419,6 +425,30 @@ export function ProductModal({
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 placeholder="e.g. 930"
+                className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Optional AAA Quality Tier Price */}
+          <div className="rounded-xl border border-amber-900/40 bg-navy-950/70 p-3.5">
+            <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-navy-800">
+              <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+              <span className="text-xs font-semibold text-amber-300 uppercase tracking-wider">
+                AAA Quality Price (Rudraksha / Premium Tier)
+              </span>
+              <span className="text-[10px] text-amber-400/80 ml-auto">Optional Tab 2</span>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-navy-200 mb-1">
+                AAA Quality Offer Price (INR ₹ — leave empty to use Standard/AA price)
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.priceAAA}
+                onChange={(e) => setFormData({ ...formData, priceAAA: e.target.value })}
+                placeholder="e.g. 1550"
                 className="w-full rounded-base border border-navy-700 bg-navy-950 px-3.5 py-2 text-small text-white placeholder:text-navy-400 focus:border-gold-400 focus:outline-none"
               />
             </div>

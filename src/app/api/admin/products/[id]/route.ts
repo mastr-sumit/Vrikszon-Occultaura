@@ -121,6 +121,7 @@ export async function PATCH(
         ...(data.subtitle !== undefined && { subtitle: data.subtitle }),
         ...(benefitsString !== undefined && { benefits: benefitsString }),
         ...(data.price !== undefined && { price: data.price }),
+        ...(data.priceAAA !== undefined && { priceAAA: data.priceAAA }),
         ...(data.image !== undefined && { image: data.image }),
         ...(data.icon !== undefined && { icon: data.icon }),
         ...(data.featured !== undefined && { featured: data.featured }),

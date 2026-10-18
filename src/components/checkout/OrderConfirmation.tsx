@@ -205,8 +205,18 @@ export default function OrderConfirmation({
                           {displayName}
                         </h3>
                         {mode && (
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${mode === "live" ? "bg-emerald-100 text-emerald-800" : "bg-navy-100 text-navy-800"}`}>
-                            {mode === "live" ? "Live" : "Recorded"}
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                              mode === "live"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : mode === "AAA"
+                                ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                : mode === "AA"
+                                ? "bg-blue-100 text-blue-900 border border-blue-300"
+                                : "bg-navy-100 text-navy-800"
+                            }`}
+                          >
+                            {mode === "live" ? "Live" : mode === "recorded" ? "Recorded" : `Quality: ${mode}`}
                           </span>
                         )}
                       </div>

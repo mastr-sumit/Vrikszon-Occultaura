@@ -47,10 +47,21 @@ interface ShopCardProps {
 
 export const ShopCard = ({ product, variants }: ShopCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [selectedQuality, setSelectedQuality] = useState<"AA" | "AAA">("AA");
   const { addToCart } = useCart();
   const Icon = PRODUCT_ICONS[product.icon] || Sparkles;
   const iconLabel = ICON_LABELS[product.icon] || "Product";
   const imageSrc = product.image || `/images/products/${product.slug}.jpg`;
+
+  const isRudraksha =
+    product.category.toLowerCase().includes("rudraksha") ||
+    product.category.toLowerCase().includes("rudraksh") ||
+    (product.priceAAA !== undefined && product.priceAAA !== null);
+
+  const activePrice =
+    isRudraksha && selectedQuality === "AAA"
+      ? (product.priceAAA ?? product.price)
+      : product.price;
 
   return (
     <motion.div variants={variants} className="h-full">
@@ -117,6 +128,11 @@ export const ShopCard = ({ product, variants }: ShopCardProps) => {
                 Full Range
               </span>
             )}
+            {isRudraksha && (
+              <span className="absolute bottom-3 left-3 z-10 rounded-full border border-gold-400/40 bg-navy-950/85 px-2.5 py-0.5 text-[10px] font-semibold text-gold-300 backdrop-blur-xs shadow-xs">
+                Grade: {selectedQuality}
+              </span>
+            )}
           </div>
 
           {/* Product info */}
@@ -154,9 +170,11 @@ export const ShopCard = ({ product, variants }: ShopCardProps) => {
               </div>
             )}
 
-            <p className="font-heading text-body-lg font-medium text-gold-700">
-              {formatProductPrice(product.price)}
-            </p>
+            {!isRudraksha && (
+              <p className="font-heading text-body-lg font-medium text-gold-700">
+                {formatProductPrice(product.price)}
+              </p>
+            )}
 
             {/* Fix #7: Clear "learn more" affordance — visual cue that clicking
                 the card area navigates to product details */}
@@ -167,8 +185,62 @@ export const ShopCard = ({ product, variants }: ShopCardProps) => {
           </div>
         </Link>
 
-        {/* ── Non-link action area: trust indicator + Add to Cart ── */}
+        {/* ── Non-link action area: tabs + trust indicator + Add to Cart ── */}
         <div className="flex flex-col gap-3 border-t border-gold-500/10 px-6 py-4">
+          {/* Quality Selector Tabs (AA vs AAA) for Rudraksha */}
+          {isRudraksha && (
+            <div className="flex flex-col gap-2">
+              <div
+                className="flex items-center rounded-xl bg-navy-50/90 p-1 border border-navy-900/10 gap-1 w-full"
+                role="tablist"
+                aria-label={`${product.name} quality options`}
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  id={`tab-aa-${product.id}`}
+                  aria-selected={selectedQuality === "AA"}
+                  onClick={() => setSelectedQuality("AA")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer",
+                    selectedQuality === "AA"
+                      ? "bg-white text-navy-950 shadow-xs border border-gold-500/25"
+                      : "text-navy-600 hover:text-navy-900 hover:bg-white/50"
+                  )}
+                >
+                  <span>AA Quality</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  id={`tab-aaa-${product.id}`}
+                  aria-selected={selectedQuality === "AAA"}
+                  onClick={() => setSelectedQuality("AAA")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer",
+                    selectedQuality === "AAA"
+                      ? "bg-white text-navy-950 shadow-xs border border-gold-500/25"
+                      : "text-navy-600 hover:text-navy-900 hover:bg-white/50"
+                  )}
+                >
+                  <Sparkles className="h-3 w-3 text-gold-500" />
+                  <span>AAA Quality</span>
+                </button>
+              </div>
+
+              {/* Price (Large, Bold, Gold Color) */}
+              <div className="flex items-baseline justify-between gap-2 pt-0.5">
+                <span className="font-heading text-h5 font-bold text-gold-600 tracking-tight">
+                  {formatProductPrice(activePrice)}
+                </span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-navy-500/80">
+                  {selectedQuality} Grade
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Fix #6: Trust indicator — authentic to the brand. All products are
               energised/blessed by the practitioner, so this is truthful, not fabricated. */}
           <div className="flex items-center gap-1.5">
@@ -183,7 +255,13 @@ export const ShopCard = ({ product, variants }: ShopCardProps) => {
           </div>
 
           {/* Fix #1 continued: Button is a sibling of the Link, not nested. */}
-          <AddToCartButton product={product} />
+          <AddToCartButton
+            product={{
+              ...product,
+              price: activePrice,
+            }}
+            mode={isRudraksha ? selectedQuality : undefined}
+          />
         </div>
       </div>
     </motion.div>

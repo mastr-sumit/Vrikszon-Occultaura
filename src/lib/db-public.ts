@@ -15,6 +15,7 @@ function formatDbProduct(p: {
   subtitle?: string | null;
   benefits?: string | null;
   price: number | null;
+  priceAAA?: number | null;
   image: string | null;
   icon: string;
   featured: boolean;
@@ -48,6 +49,7 @@ function formatDbProduct(p: {
     subtitle: p.subtitle || undefined,
     benefits,
     price: p.price,
+    priceAAA: p.priceAAA ?? undefined,
     image: p.image,
     icon: validIcon,
     featured: p.featured,

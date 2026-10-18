@@ -4,19 +4,21 @@ import React, { createContext, useContext, useState, useCallback, useMemo } from
 import { Product } from "@/data/products";
 import { Course, CourseMode } from "@/data/courses";
 
+export type ItemMode = CourseMode | "AA" | "AAA";
+
 export interface CartItem {
   product: Product;
   quantity: number;
-  mode?: CourseMode;
+  mode?: ItemMode;
   itemType?: "product" | "course";
 }
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (product: Product, mode?: CourseMode) => void;
+  addToCart: (product: Product, mode?: ItemMode) => void;
   addCourseToCart: (course: Course, mode: CourseMode) => void;
-  removeFromCart: (productId: string, mode?: CourseMode) => void;
-  updateQuantity: (productId: string, quantity: number, mode?: CourseMode) => void;
+  removeFromCart: (productId: string, mode?: ItemMode) => void;
+  updateQuantity: (productId: string, quantity: number, mode?: ItemMode) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -32,7 +34,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const addToCart = useCallback((product: Product, mode?: CourseMode) => {
+  const addToCart = useCallback((product: Product, mode?: ItemMode) => {
+    const effectivePrice = mode === "AAA" ? (product.priceAAA ?? product.price) : product.price;
+    const productWithPrice: Product = effectivePrice !== product.price ? {
+      ...product,
+      price: effectivePrice,
+    } : product;
+
     setItems((prevItems) => {
       const existingIndex = prevItems.findIndex(
         (item) => item.product.id === product.id && item.mode === mode
@@ -45,7 +53,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         return updated;
       }
-      return [...prevItems, { product, quantity: 1, mode, itemType: "product" }];
+      return [...prevItems, { product: productWithPrice, quantity: 1, mode, itemType: "product" }];
     });
   }, []);
 
@@ -93,7 +101,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsOpen(true);
   }, []);
 
-  const removeFromCart = useCallback((productId: string, mode?: CourseMode) => {
+  const removeFromCart = useCallback((productId: string, mode?: ItemMode) => {
     setItems((prevItems) =>
       prevItems.filter((item) => {
         if (mode !== undefined) {
@@ -104,7 +112,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   }, []);
 
-  const updateQuantity = useCallback((productId: string, quantity: number, mode?: CourseMode) => {
+  const updateQuantity = useCallback((productId: string, quantity: number, mode?: ItemMode) => {
     if (quantity <= 0) {
       removeFromCart(productId, mode);
       return;

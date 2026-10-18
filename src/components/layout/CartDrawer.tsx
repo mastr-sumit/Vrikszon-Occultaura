@@ -299,10 +299,14 @@ const CartDrawer = () => {
                                     "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
                                     mode === "live"
                                       ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                                      : mode === "AAA"
+                                      ? "bg-amber-100 text-amber-900 border border-amber-300"
+                                      : mode === "AA"
+                                      ? "bg-blue-100 text-blue-900 border border-blue-300"
                                       : "bg-navy-100 text-navy-800 border border-navy-200"
                                   )}
                                 >
-                                  {mode === "live" ? "Live" : "Recorded"}
+                                  {mode === "live" ? "Live" : mode === "recorded" ? "Recorded" : `Quality: ${mode}`}
                                 </span>
                               )}
                             </div>

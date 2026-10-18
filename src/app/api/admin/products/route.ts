@@ -18,6 +18,7 @@ export function formatProduct(product: {
   subtitle: string | null;
   benefits: string | null;
   price: number | null;
+  priceAAA?: number | null;
   image: string | null;
   icon: string;
   featured: boolean;
@@ -121,6 +122,7 @@ export async function POST(request: Request) {
         subtitle: data.subtitle ?? null,
         benefits: benefitsString,
         price: data.price ?? null,
+        priceAAA: data.priceAAA ?? null,
         image: data.image ?? null,
         icon: data.icon ?? "sparkles",
         featured: data.featured ?? false,

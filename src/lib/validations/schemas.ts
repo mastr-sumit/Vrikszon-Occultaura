@@ -335,6 +335,13 @@ export const createProductSchema = z
       .max(100000000, "Price exceeds maximum allowable limit")
       .optional()
       .nullable(),
+    priceAAA: z
+      .number()
+      .int("AAA Price must be an integer value in rupees")
+      .min(0, "AAA Price must be 0 or a positive integer")
+      .max(100000000, "AAA Price exceeds maximum allowable limit")
+      .optional()
+      .nullable(),
     image: z
       .string()
       .trim()

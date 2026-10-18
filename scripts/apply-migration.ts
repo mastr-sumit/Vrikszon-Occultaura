@@ -24,8 +24,9 @@ async function run() {
       ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "livePrice" INTEGER;
       ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "liveOriginalPrice" INTEGER;
       ALTER TABLE "Course" ADD COLUMN IF NOT EXISTS "nextBatch" TEXT;
+      ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "priceAAA" INTEGER;
     `);
-    console.log("Course columns ensured.");
+    console.log("Course and Product columns ensured.");
 
     // Remove problematic 'mode' column if present and add 'purchase_mode'
     await client.query(`

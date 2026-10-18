@@ -25,6 +25,7 @@ export interface AdminOrderItem {
   productId: string;
   quantity: number;
   price: number;
+  purchaseMode?: string | null;
   product: {
     name: string;
     slug: string;
@@ -408,8 +409,14 @@ export function OrdersTab({ orders, onOrdersUpdated }: OrdersTabProps) {
                         key={item.id}
                         className="flex items-center justify-between text-navy-200"
                       >
-                        <span className="truncate max-w-[240px]">
-                          {item.product?.name || item.productId} × {item.quantity}
+                        <span className="truncate max-w-[260px] flex items-center gap-1.5">
+                          <span className="truncate">{item.product?.name || item.productId}</span>
+                          {item.purchaseMode && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-navy-800 text-gold-400 border border-gold-500/30 shrink-0">
+                              {item.purchaseMode}
+                            </span>
+                          )}
+                          <span className="text-navy-400 shrink-0">× {item.quantity}</span>
                         </span>
                         <span className="font-mono text-gold-400 shrink-0 ml-2">
                           ₹{(item.price * item.quantity).toLocaleString("en-IN")}

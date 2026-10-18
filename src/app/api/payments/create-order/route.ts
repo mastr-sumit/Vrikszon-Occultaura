@@ -64,9 +64,9 @@ export async function POST(request: Request) {
       }
 
       // Server-side total calculation in Rupees
-      const totalPriceRupees = items.reduce((acc: number, item: { productId: string; quantity: number }) => {
+      const totalPriceRupees = items.reduce((acc: number, item: { productId: string; quantity: number; mode?: string }) => {
         const prod = productMap.get(item.productId)!;
-        const unitPrice = prod.price ?? 0;
+        const unitPrice = item.mode === "AAA" ? (prod.priceAAA ?? prod.price ?? 0) : (prod.price ?? 0);
         return acc + unitPrice * item.quantity;
       }, 0);
 
@@ -118,10 +118,11 @@ export async function POST(request: Request) {
           items: {
             create: items.map((item: { productId: string; quantity: number; mode?: string }) => {
               const prod = productMap.get(item.productId)!;
+              const unitPrice = item.mode === "AAA" ? (prod.priceAAA ?? prod.price ?? 0) : (prod.price ?? 0);
               return {
                 productId: prod.id,
                 quantity: item.quantity,
-                price: prod.price ?? 0,
+                price: unitPrice,
                 purchaseMode: item.mode || null,
               };
             }),

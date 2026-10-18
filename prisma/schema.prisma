@@ -130,6 +130,7 @@ model Product {
   subtitle         String?
   benefits         String?     // store as JSON-stringified array since SQLite has no native array type
   price            Int? // INR, paise nahi — plain rupee value, null = price on request
+  priceAAA         Int? // INR, AAA Quality price, null = standard/same as price
   image            String?
   icon             String      @default("sparkles")
   featured         Boolean     @default(false)
