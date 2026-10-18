@@ -38,7 +38,7 @@ const ShopGrid = ({ initialProducts }: ShopGridProps) => {
         const res = await fetch("/api/products", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          if (isMounted && Array.isArray(data)) {
+          if (isMounted && Array.isArray(data) && data.length > 0) {
             setProductsList(data);
           }
         }

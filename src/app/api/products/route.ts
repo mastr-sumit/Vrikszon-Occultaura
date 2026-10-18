@@ -54,15 +54,22 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json(formatted, {
+    if (formatted.length > 0) {
+      return NextResponse.json(formatted, {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        },
+      });
+    }
+
+    return NextResponse.json(PRODUCTS.filter((p) => p.enabled), {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       },
     });
   } catch (error) {
     console.error("[PUBLIC_PRODUCTS_GET_ERROR]", error);
-    return NextResponse.json([], {
-      status: 500,
+    return NextResponse.json(PRODUCTS.filter((p) => p.enabled), {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
       },

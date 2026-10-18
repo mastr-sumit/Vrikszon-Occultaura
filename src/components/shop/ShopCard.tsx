@@ -54,9 +54,8 @@ export const ShopCard = ({ product, variants }: ShopCardProps) => {
   const imageSrc = product.image || `/images/products/${product.slug}.jpg`;
 
   const isRudraksha =
-    product.category.toLowerCase().includes("rudraksha") ||
-    product.category.toLowerCase().includes("rudraksh") ||
-    (product.priceAAA !== undefined && product.priceAAA !== null);
+    product.category.toLowerCase() !== "rudraksha mala" &&
+    (product.category === "Rudraksha" || (product.priceAAA !== undefined && product.priceAAA !== null));
 
   const activePrice =
     isRudraksha && selectedQuality === "AAA"

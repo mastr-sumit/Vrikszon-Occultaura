@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { type Product, type ProductIcon } from "@/data/products";
+import { PRODUCTS, type Product, type ProductIcon } from "@/data/products";
 import { type Course, type CourseCategory } from "@/data/courses";
 import { type TestimonialItem } from "@/components/sections/Testimonials";
 
@@ -74,10 +74,13 @@ export async function getPublicProducts(): Promise<Product[]> {
       },
     });
 
-    return dbProducts.map(formatDbProduct);
+    if (dbProducts.length > 0) {
+      return dbProducts.map(formatDbProduct);
+    }
+    return PRODUCTS.filter((p) => p.enabled);
   } catch (error) {
     console.error("[getPublicProducts] DB fetch error:", error);
-    return [];
+    return PRODUCTS.filter((p) => p.enabled);
   }
 }
 
